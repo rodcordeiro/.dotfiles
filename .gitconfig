@@ -1,0 +1,38 @@
+[user]
+	name = Rodrigo Cordeiro
+	email = rodrigomendoncca@gmail.com
+
+[alias]
+
+	# View abbreviated SHA, description, and history graph of the latest 20 commits.
+	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+
+	# Show verbose output about tags, branches or remotes
+	tags = tag -l
+	branches = branch --all
+	remotes = remote --verbose
+
+	# List aliases.
+	aliases = config --get-regexp alias
+
+[branch]
+
+	# Show most recently changed branches first.
+	sort = -committerdate
+[color]
+
+	# Use colors in Git commands that are capable of colored output when
+	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+	ui = auto
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+[color "branch"]
+	current = cyan
+	local = green
+	remote = yellow
+
+[help]
+	# Automatically correct and execute mistyped commands.
+	autocorrect = 1
