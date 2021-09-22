@@ -1,39 +1,24 @@
-
 <#PSScriptInfo
 .VERSION 1.0
 .GUID 55081cab-08e3-4c05-96bb-a70c79cb5b3b
-
 .AUTHOR Rodrigo Cordeiro <rodrigomendoncca@gmail.com>
-
 .COMPANYNAME 
-
 .COPYRIGHT 
-
 .TAGS PersonalConfiguration PersonalAssistant Terminal Powershell
-
 .LICENSEURI 
-
 .PROJECTURI https://rodcordeiro.com.br/
-
 .ICONURI 
-
 .EXTERNALMODULEDEPENDENCIES 
-
 .REQUIREDSCRIPTS 
-
 .EXTERNALSCRIPTDEPENDENCIES 
-
 .RELEASENOTES
-
-
 #>
 
 <# 
-
 .DESCRIPTION 
  Profile configuration 
-
 #> 
+
 Param()
 
 function SignScripts{
@@ -57,6 +42,9 @@ function SignScripts{
     }
     Write-Host ""
       $certificates = Get-ChildItem cert:\LocalMachine\My
+      if(!$certificates){
+		return Write-Host "There's no available certificate. Please refer to https://guidooliveira.com/gerando-certificados-para-assinar-digitalmente-seus-scripts/ for instructions about creating sign certificate"
+	}
       $counter = 1;
       Write-Host "Bellow are the available certificates:"
       $certificates | ForEach-Object {
@@ -72,11 +60,21 @@ function SignScripts{
       Set-AuthenticodeSignature $Path $certificate
 }
 
-    
 ## ALIASES
 Set-Alias sign SignScripts
+Set-Alias code code-insiders
+$projetos="C:\Users\$env:username\Projetos"
 
 ## Configs
 $console = $host.ui.rawui
-$console.backgroundcolor = "black"
-$console.foregroundcolor = "cyan"
+If($True -eq ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")){
+	## Admin configs
+	$console.backgroundcolor = "black"
+	$console.foregroundcolor = "cyan"
+	$console.WindowTitle = "Modo insano, ATIVAR!"
+} else {
+	## User configs
+	$console.backgroundcolor = "black"
+	$console.foregroundcolor = "cyan"
+	$console.WindowTitle = "RodCordeiro"
+}
