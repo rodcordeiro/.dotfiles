@@ -109,7 +109,6 @@ function vscode {
         Break;
     }
     Start-Process -FilePath $code -ArgumentList "$(Resolve-Path -Path $Path)"
-        
 }
 
 function Prompt {
@@ -131,18 +130,19 @@ function Prompt {
         $Title = "< RodC0rdeiro />"
     }
     $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {"$CmdPromptCurrentFolder"})"
-    
+
     Write-Host "$CmdPromptCurrentFolder " -NoNewline
     
     if (Test-Path -Path .git) {
         $CurrentBranch = git branch | select-string "\*"
-        Write-Host "($($CurrentBranch.ToString().split(" ")[1])) " -ForegroundColor cyan -NoNewline
+        Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
+        Write-host ($(if (git status | select-string "Changes not staged for commit") { '*' } elseif (git status | select-string "Changes to be committed:") { '::' } elseif (git status | select-string "Your branch is ahead") { '↑' } else { '' })) -ForegroundColor gray  -NoNewline
     }
-
-    Write-host ($(if ($IsAdmin) { '#' } else { '$' })) -NoNewline
+    
+    Write-host ($(if ($IsAdmin) { ' #' } else { ' $' })) -NoNewline
     return "> "    
 }
-    
+   
 ## ALIASES
 Set-Alias sign SignScripts
 Set-Alias code vscode
