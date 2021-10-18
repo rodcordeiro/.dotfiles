@@ -136,7 +136,19 @@ function Prompt {
     if (Test-Path -Path .git) {
         $CurrentBranch = git branch | select-string "\*"
         Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
-        Write-host ($(if (git status | select-string "Changes not staged for commit") { '*' } elseif (git status | select-string "Changes to be committed:") { '::' } elseif (git status | select-string "Your branch is ahead") { '↑' } else { '' })) -ForegroundColor gray  -NoNewline
+        if (git status | select-string "Changes not staged for commit") { 
+            Write-host '*' -ForegroundColor gray  -NoNewline 
+        }
+        elseif (git status | select-string "Changes to be committed:") { 
+            Write-host '::' -ForegroundColor gray  -NoNewline
+        }
+        
+        elseif (git status | select-string "Your branch is ahead") { 
+            Write-host '^' -ForegroundColor gray  -NoNewline
+        }
+        else {
+            Write-host '' -ForegroundColor gray  -NoNewline
+        }
     }
     
     Write-host ($(if ($IsAdmin) { ' #' } else { ' $' })) -NoNewline
