@@ -35,6 +35,8 @@ else {
 }
 $console.WindowTitle = $Title
 
+# Changes output encoding to UTF8
+$OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
 
 function SignScripts {
     <# 
@@ -119,8 +121,17 @@ function Prompt {
         Changes PS Prompt
     #> 
     $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-    $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
-    $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf
+    # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
+    if($(Split-Path -Path $pwd -Leaf) -eq 'android'){
+        $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
+    } elseif($(Split-Path -Path $pwd -Leaf) -eq '.github'){
+        $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
+    } elseif($(Split-Path -Path $pwd -Leaf) -eq 'src'){
+        $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
+    } else {
+        $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf  
+    }
+    
     # Write-Host "$($CmdPromptUser.Name.split("\")[1]) " -ForegroundColor green -NoNewline
     
     if ($IsAdmin) {
@@ -142,9 +153,11 @@ function Prompt {
         elseif (git status | select-string "Changes to be committed:") { 
             Write-host '::' -ForegroundColor gray  -NoNewline
         }
-        
         elseif (git status | select-string "Your branch is ahead") { 
             Write-host '^' -ForegroundColor gray  -NoNewline
+        }
+        elseif (git status | select-string "Your branch is behind") { 
+            Write-host '|' -ForegroundColor gray  -NoNewline
         }
         else {
             Write-host '' -ForegroundColor gray  -NoNewline
@@ -159,3 +172,37 @@ function Prompt {
 Set-Alias sign SignScripts
 Set-Alias code vscode
 $projetos = "C:\Users\$env:username\Projetos"
+
+
+
+# $oldConsoleEncoding 
+# IsSingleByte      : True
+# BodyName          : ibm850
+# EncodingName      : Europa Ocidental (DOS)
+# HeaderName        : ibm850
+# WebName           : ibm850
+# WindowsCodePage   : 1252
+# IsBrowserDisplay  : False
+# IsBrowserSave     : False
+# IsMailNewsDisplay : False
+# IsMailNewsSave    : False
+# EncoderFallback   : System.Text.InternalEncoderBestFitFallback
+# DecoderFallback   : System.Text.InternalDecoderBestFitFallback
+# IsReadOnly        : True
+# CodePage          : 850
+
+# $OutputEncoding
+# IsSingleByte      : True
+# BodyName          : us-ascii
+# EncodingName      : US-ASCII
+# HeaderName        : us-ascii
+# WebName           : us-ascii
+# WindowsCodePage   : 1252
+# IsBrowserDisplay  : False
+# IsBrowserSave     : False
+# IsMailNewsDisplay : True
+# IsMailNewsSave    : True
+# EncoderFallback   : System.Text.EncoderReplacementFallback
+# DecoderFallback   : System.Text.DecoderReplacementFallback
+# IsReadOnly        : True
+# CodePage          : 20127
