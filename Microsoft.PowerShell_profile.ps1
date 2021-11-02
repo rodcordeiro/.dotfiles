@@ -100,11 +100,11 @@ function vscode {
     if (!$Path) {
         $Path = $PWD
     }
-    if (Get-Command code-insiders) {
-        $code = $(get-command code-insiders).source
+    if (Get-Command code.cmd) {
+        $code = $(get-command code.cmd).source
     }
-    elseif (Get-Command code) {
-        $code = $(get-command code).source
+    elseif (Get-Command code-insiders.cmd) {
+        $code = $(get-command code-insiders.cmd).source
     }
     else {
         Write-Host "VSCode not installed. Please verify";
@@ -122,13 +122,16 @@ function Prompt {
     #> 
     $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
     # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
-    if($(Split-Path -Path $pwd -Leaf) -eq 'android'){
+    if ($(Split-Path -Path $pwd -Leaf) -eq 'android') {
         $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
-    } elseif($(Split-Path -Path $pwd -Leaf) -eq '.github'){
+    }
+    elseif ($(Split-Path -Path $pwd -Leaf) -eq '.github') {
         $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
-    } elseif($(Split-Path -Path $pwd -Leaf) -eq 'src'){
+    }
+    elseif ($(Split-Path -Path $pwd -Leaf) -eq 'src') {
         $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
-    } else {
+    }
+    else {
         $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf  
     }
     
@@ -170,7 +173,7 @@ function Prompt {
    
 ## ALIASES
 Set-Alias sign SignScripts
-
+Set-Alias code vscode
 $projetos = "C:\Users\$env:username\Projetos"
 
 
