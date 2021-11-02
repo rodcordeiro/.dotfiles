@@ -157,5 +157,5 @@ function Prompt {
    
 ## ALIASES
 Set-Alias sign SignScripts
-Set-Alias code vscode
+
 $projetos = "C:\Users\$env:username\Projetos"
