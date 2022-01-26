@@ -1,8 +1,10 @@
 [user]
 	name = Rodrigo Cordeiro
 	email = rodrigomendoncca@gmail.com
-
-	signingkey = 074C3810233C614E
+[includeIf "gitdir:~/projetos/personal"]
+  path = .gitconfig-rod
+[includeIf "gitdir:~/projetos/PDA/"]
+  path = .gitconfig-pda
 [alias]
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline -n 20 --graph --abbrev-commit
