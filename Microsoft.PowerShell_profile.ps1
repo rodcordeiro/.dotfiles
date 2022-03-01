@@ -1,117 +1,6 @@
-<#PSScriptInfo
-.VERSION 1.0
-.GUID 55081cab-08e3-4c05-96bb-a70c79cb5b3b
-.AUTHOR Rodrigo Cordeiro <rodrigomendoncca@gmail.com>
-.COMPANYNAME 
-.COPYRIGHT 
-.TAGS PersonalConfiguration PersonalAssistant Terminal Powershell
-.LICENSEURI 
-.PROJECTURI https://rodcordeiro.com.br/
-.ICONURI 
-.EXTERNALMODULEDEPENDENCIES 
-.REQUIREDSCRIPTS 
-.EXTERNALSCRIPTDEPENDENCIES 
-.RELEASENOTES
-#>
-
-<# 
-.DESCRIPTION 
- Profile configuration 
-#> 
-
-Param()
-
-## Configs
-$console = $host.ui.rawui
-
-$console.BackgroundColor = "black"
-$console.foregroundcolor = "cyan"
-
-if ((New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
-    $Title = "< GODMODE />"
-}
-else {
-    $Title = "< RodC0rdeiro />"
-}
-$console.WindowTitle = $Title
 
 # Changes output encoding to UTF8
 $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
-
-function SignScripts {
-    <# 
-.SYNOPSIS 
-    Sign a script with a certificate 
-.DESCRIPTION
-    Sign a script with a valid certificate
-.Parameter <Path>
-    Path to script to sign
-.Example
-    sign ./example.ps1
-.Example
-    sign C:\Scripts\example.ps1
-#> 
-    
-    param([parameter(ValueFromPipelineByPropertyName)][string]$Path)
-    if (!$Path) {
-        Write-Host "You must pass the path argument"
-        Break
-    }
-    Write-Host ""
-    $certificates = Get-ChildItem cert:\LocalMachine\My
-    if (!$certificates) {
-        return Write-Host "There's no available certificate. Please refer to https://guidooliveira.com/gerando-certificados-para-assinar-digitalmente-seus-scripts/ for instructions about creating sign certificate"
-    }
-    $counter = 1;
-    Write-Host "Bellow are the available certificates:"
-    $certificates | ForEach-Object {
-        $cer = $_ | Select-Object Subject
-        Write-Host "$counter | $cer"
-        $counter = $counter + 1
-    }
-    Write-Host ""
-      
-    $opt = $(Read-Host -Prompt "Enter the certificate number choosed") - 1
-    $certificate = $certificates[$opt]
-      
-    Set-AuthenticodeSignature $Path $certificate
-}
-
-function vscode {
-    <# 
-    .SYNOPSIS 
-        Opens VSCode with some customization
-    .DESCRIPTION
-        Opens VSCode with some customization
-    .Parameter <Path>
-        Path to folder to be opened
-    .Example
-        vscode ./example.ps1
-    .Example
-        vscode C:\Scripts\example.ps1
-    .Example
-        vscode
-    .Example
-        vscode .
-    #> 
-        
-    param([parameter(ValueFromPipelineByPropertyName)][string]$Path)
-        
-    if (!$Path) {
-        $Path = $PWD
-    }
-    if (Get-Command code.cmd) {
-        $code = $(get-command code.cmd).source
-    }
-    elseif (Get-Command code-insiders.cmd) {
-        $code = $(get-command code-insiders.cmd).source
-    }
-    else {
-        Write-Host "VSCode not installed. Please verify";
-        Break;
-    }
-    Start-Process -FilePath $code -ArgumentList "$(Resolve-Path -Path $Path)"
-}
 
 function Prompt {
     <# 
@@ -167,45 +56,64 @@ function Prompt {
         }
     }
     
-    Write-host ($(if ($IsAdmin) { ' #' } else { ' $' })) -NoNewline
-    return "> "    
+    return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
 }
-   
+
+function clone {
+    <# 
+    .SYNOPSIS 
+        Function to customize repositories cloning with some validations.
+    .DESCRIPTION
+        Function to customize repositories cloning with some validations. It validates the folder and the repository link.
+    .Parameter <Path>
+        Repository link
+    .Parameter <Folder>
+        Provides you the possibility of cloning the repository on a different folder. Pass the desired folder path.
+    .Parameter <Alias>
+        Provides you the possibility of changing the destiny folder name.
+    .Parameter <Confirm>
+        Forces execution
+    .EXAMPLE
+        clone https://github.com/user/repo.git
+    .EXAMPLE
+        clone https://github.com/user/repo.git -y
+    .EXAMPLE
+        clone https://github.com/user/repo.git -Folder test
+    .EXAMPLE
+        clone https://github.com/user/repo.git -Alias someTest
+    .EXAMPLE
+        clone https://github.com/user/repo.git someTest
+    #>
+
+    param(
+        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Please, enter the repository link for download")][string]$Path,
+        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Provides you the possibility of changing the destiny folder name.")][string]$Alias,
+        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Provides you the possibility of cloning the repository on a different folder. Pass the desired folder path.")][string]$Folder,
+        [parameter(HelpMessage="Please, enter the repository link for download")][Alias('y','yes')][Switch] $confirm
+    )
+
+    if (!$Path) {
+        Write-Host "You must provide a repository to clone!"
+    }
+    $repository = $Path
+    $destiny = if($Folder) {$Folder} else {$pwd}
+    $localFolder = if($Alias) {$Alias} else {$(Split-Path -Path $repository -Leaf)}
+
+    if($(Split-Path -Path $destiny -Leaf) -eq 'personal' -Or $(Split-Path -Path $destiny -Leaf) -eq 'pda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'estudos' -Or $confirm){
+        if($folder) { cd $(Resolve-Path -Path $Folder)}
+        git clone $repository $(if($Alias) {$Alias})
+        cd $(Resolve-Path -Path $localFolder)
+        return
+    }
+
+    $response = Read-Host "You're outside of the predefined projects folders. Do you want to proceed? ([Y]es/[N]o)"
+    if($response -eq 'Y' -Or $response -eq 'y' -Or $response -eq 'S' -Or $response -eq 's'){
+        if($folder) { cd $(Resolve-Path -Path $Folder)}
+        git clone $repository $(if($Alias) {$Alias})
+        cd $(Resolve-Path -Path $localFolder)
+        return
+    }
+    Write-Host "Cancelling cloning projects. Have a nice day!"
+}
+
 ## ALIASES
-Set-Alias sign SignScripts
-Set-Alias code vscode
-$projetos = "C:\Users\$env:username\Projetos"
-
-
-
-# $oldConsoleEncoding 
-# IsSingleByte      : True
-# BodyName          : ibm850
-# EncodingName      : Europa Ocidental (DOS)
-# HeaderName        : ibm850
-# WebName           : ibm850
-# WindowsCodePage   : 1252
-# IsBrowserDisplay  : False
-# IsBrowserSave     : False
-# IsMailNewsDisplay : False
-# IsMailNewsSave    : False
-# EncoderFallback   : System.Text.InternalEncoderBestFitFallback
-# DecoderFallback   : System.Text.InternalDecoderBestFitFallback
-# IsReadOnly        : True
-# CodePage          : 850
-
-# $OutputEncoding
-# IsSingleByte      : True
-# BodyName          : us-ascii
-# EncodingName      : US-ASCII
-# HeaderName        : us-ascii
-# WebName           : us-ascii
-# WindowsCodePage   : 1252
-# IsBrowserDisplay  : False
-# IsBrowserSave     : False
-# IsMailNewsDisplay : True
-# IsMailNewsSave    : True
-# EncoderFallback   : System.Text.EncoderReplacementFallback
-# DecoderFallback   : System.Text.DecoderReplacementFallback
-# IsReadOnly        : True
-# CodePage          : 20127
