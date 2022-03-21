@@ -1,6 +1,15 @@
-
 # Changes output encoding to UTF8
 $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
+
+# Modules imports
+Import-Module Terminal-Icons
+
+# Set terminal configs
+Set-ConsoleFont "LiterationMono NF"
+Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
+
+# Clears terminal before starting
+Clear-Host
 
 function Prompt {
     <# 
@@ -18,6 +27,12 @@ function Prompt {
         $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
     }
     elseif ($(Split-Path -Path $pwd -Leaf) -eq 'src') {
+        $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
+    }
+    elseif ($(Split-Path -Path $pwd -Leaf) -eq '.ci') {
+        $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
+    }
+    elseif ($(Split-Path -Path $pwd -Leaf) -eq '.azuredevops') {
         $CmdPromptCurrentFolder = "$(Split-Path -Path $(Split-Path -Path $pwd -Parent) -Leaf)\$(Split-Path -Path $pwd -Leaf)"
     }
     else {
@@ -40,19 +55,19 @@ function Prompt {
         $CurrentBranch = git branch | select-string "\*"
         Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
         if (git status | select-string "Changes not staged for commit") { 
-            Write-host '*' -ForegroundColor gray  -NoNewline 
+            Write-host '* ' -ForegroundColor gray  -NoNewline 
         }
         elseif (git status | select-string "Changes to be committed:") { 
-            Write-host '::' -ForegroundColor gray  -NoNewline
+            Write-host ':: ' -ForegroundColor gray  -NoNewline
         }
         elseif (git status | select-string "Your branch is ahead") { 
-            Write-host '^' -ForegroundColor gray  -NoNewline
+            Write-host '^ ' -ForegroundColor gray  -NoNewline
         }
         elseif (git status | select-string "Your branch is behind") { 
-            Write-host '|' -ForegroundColor gray  -NoNewline
+            Write-host '| ' -ForegroundColor gray  -NoNewline
         }
         else {
-            Write-host '' -ForegroundColor gray  -NoNewline
+            Write-host ' ' -ForegroundColor gray  -NoNewline
         }
     }
     
@@ -86,34 +101,37 @@ function clone {
     #>
 
     param(
-        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Please, enter the repository link for download")][string]$Path,
-        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Provides you the possibility of changing the destiny folder name.")][string]$Alias,
-        [parameter(ValueFromPipelineByPropertyName,HelpMessage="Provides you the possibility of cloning the repository on a different folder. Pass the desired folder path.")][string]$Folder,
-        [parameter(HelpMessage="Please, enter the repository link for download")][Alias('y','yes')][Switch] $confirm
+        [parameter(ValueFromPipelineByPropertyName, HelpMessage = "Please, enter the repository link for download")][string]$Path,
+        [parameter(ValueFromPipelineByPropertyName, HelpMessage = "Provides you the possibility of changing the destiny folder name.")][string]$Alias,
+        [parameter(ValueFromPipelineByPropertyName, HelpMessage = "Provides you the possibility of cloning the repository on a different folder. Pass the desired folder path.")][string]$Folder,
+        [parameter(HelpMessage = "Please, enter the repository link for download")][Alias('y', 'yes')][Switch] $confirm
     )
 
     if (!$Path) {
         Write-Host "You must provide a repository to clone!"
     }
     $repository = $Path
-    $destiny = if($Folder) {$Folder} else {$pwd}
-    $localFolder = if($Alias) {$Alias} else {$(Split-Path -Path $repository -Leaf)}
+    $destiny = if ($Folder) { $Folder } else { $pwd }
+    $localFolder = if ($Alias) { $Alias } else { $(Split-Path -Path $repository -Leaf) }
 
-    if($(Split-Path -Path $destiny -Leaf) -eq 'personal' -Or $(Split-Path -Path $destiny -Leaf) -eq 'pda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'estudos' -Or $confirm){
-        if($folder) { cd $(Resolve-Path -Path $Folder)}
-        git clone $repository $(if($Alias) {$Alias})
-        cd $(Resolve-Path -Path $localFolder)
+    if ($(Split-Path -Path $destiny -Leaf) -eq 'personal' -Or $(Split-Path -Path $destiny -Leaf) -eq 'pda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'estudos' -Or $confirm) {
+        if ($folder) { Set-Location $(Resolve-Path -Path $Folder) }
+        git clone $repository $(if ($Alias) { $Alias })
+        Set-Location $(Resolve-Path -Path $localFolder)
         return
     }
 
     $response = Read-Host "You're outside of the predefined projects folders. Do you want to proceed? ([Y]es/[N]o)"
-    if($response -eq 'Y' -Or $response -eq 'y' -Or $response -eq 'S' -Or $response -eq 's'){
-        if($folder) { cd $(Resolve-Path -Path $Folder)}
-        git clone $repository $(if($Alias) {$Alias})
-        cd $(Resolve-Path -Path $localFolder)
+    if ($response -eq 'Y' -Or $response -eq 'y' -Or $response -eq 'S' -Or $response -eq 's') {
+        if ($folder) { Set-Location $(Resolve-Path -Path $Folder) }
+        git clone $repository $(if ($Alias) { $Alias })
+        Set-Location $(Resolve-Path -Path $localFolder)
         return
     }
     Write-Host "Cancelling cloning projects. Have a nice day!"
 }
 
 ## ALIASES
+Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
+Set-Alias activate ".\.venv\scripts\activate"
+Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio\Beekeeper Studio.exe"
