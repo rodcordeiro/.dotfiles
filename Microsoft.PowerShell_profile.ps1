@@ -1,8 +1,18 @@
+# Microsoft.PowerShell.Management
+# Microsoft.PowerShell.Security
+# Microsoft.PowerShell.Utility
+# Microsoft.WSMan.Management
+# PSReadline
+# Terminal-Icons
+# WindowsConsoleFonts
+
+
 # Changes output encoding to UTF8
 $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
 
 # Modules imports
 Import-Module Terminal-Icons
+
 
 # Set terminal configs
 Set-ConsoleFont "LiterationMono NF"
