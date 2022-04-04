@@ -11,6 +11,7 @@ Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
 # Clears terminal before starting
 Clear-Host
 
+# Customizing prompt
 function Prompt {
     <# 
     .SYNOPSIS 
@@ -74,6 +75,19 @@ function Prompt {
     return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
 }
 
+# My personal functions
+function compress(){
+    <# 
+    .SYNOPSIS 
+        Compress build folder into app zipped file.
+    .DESCRIPTION
+        Compress build folder into app zipped file.
+    .EXAMPLE
+        compress
+    #>
+    Compress-Archive .\build\* .\app.zip -Force
+}
+
 function clone {
     <# 
     .SYNOPSIS 
@@ -135,3 +149,4 @@ function clone {
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
 Set-Alias activate ".\.venv\scripts\activate"
 Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio\Beekeeper Studio.exe"
+Set-Alias bash="& \"C:\Program Files\Git\git-bash.exe\""
