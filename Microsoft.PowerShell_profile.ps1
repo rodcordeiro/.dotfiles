@@ -1,17 +1,22 @@
-# Microsoft.PowerShell.Management
-# Microsoft.PowerShell.Security
-# Microsoft.PowerShell.Utility
-# Microsoft.WSMan.Management
-# PSReadline
-# Terminal-Icons
-# WindowsConsoleFonts
-
-
 # Changes output encoding to UTF8
 $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
 
 # Modules imports
 Import-Module Terminal-Icons
+Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\MyModule.psm1"
+import-module PSScriptAnalyzer
+
+## Needed modules
+# Microsoft.PowerShell.Management
+# Microsoft.PowerShell.Security
+# Microsoft.PowerShell.Utility
+# MyModule
+# PackageManagement
+# PowerShellGet
+# PSReadline
+# psscriptanalyzer
+# Terminal-Icons
+# WindowsConsoleFonts
 
 
 # Set terminal configs
@@ -86,7 +91,7 @@ function Prompt {
 }
 
 # My personal functions
-function compress(){
+function compress() {
     <# 
     .SYNOPSIS 
         Compress build folder into app zipped file.
@@ -159,4 +164,7 @@ function clone {
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
 Set-Alias activate ".\.venv\scripts\activate"
 Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio\Beekeeper Studio.exe"
-Set-Alias bash="& \"C:\Program Files\Git\git-bash.exe\""
+Set-Alias la "@(ls -ah;ls)"
+
+## PERSONAL_VARIABLES
+$env:GOOGLE_TOKEN = "AIzaSyDbRlNXxJf272Sg4Zdr5e1-vQjWw6veL-I"
