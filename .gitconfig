@@ -1,19 +1,20 @@
-[user]
-	name = Rodrigo Cordeiro
-	email = rodrigomendoncca@gmail.com
-[includeIf "gitdir:~/projetos/personal"]
+[includeIf "gitdir:~/projetos/personal/"]
   path = .gitconfig-rod
 [includeIf "gitdir:~/projetos/PDA/"]
   path = .gitconfig-pda
 [alias]
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+	graph = log --graph --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
 
 	# Show verbose output about tags, branches or remotes
 	tags = tag -l
 	branches = branch --all
 	remotes = remote --verbose
 
+	# List contributors with number of commits
+	contributors = shortlog --summary --numbered
+	
 	# List aliases.
 	aliases = config --get-regexp alias
 
@@ -40,7 +41,12 @@
 	autocorrect = 1
 [init]
 	defaultBranch = main
-[commit]
-	gpgsign = true
-[gpg]
-	program = C:\\Program Files (x86)\\Gpg4win\\..\\GnuPG\\bin\\gpg.exe
+# [commit]
+# 	gpgsign = true
+# [gpg]
+# 	program = C:\\Program Files (x86)\\Gpg4win\\..\\GnuPG\\bin\\gpg.exe
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f

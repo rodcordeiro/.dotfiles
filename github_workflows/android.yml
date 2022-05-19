@@ -1,0 +1,30 @@
+name: Android CI
+
+on:
+  push:
+    branches: [beta]
+  pull_request:
+    branches: [beta]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+      - name: Build with Gradle
+        run: ./android/gradlew build
+      - name: Send file apk to discord channel
+        uses: sinshutu/upload-to-discord@v2.0.0
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: README.md
