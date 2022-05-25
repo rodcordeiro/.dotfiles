@@ -134,3 +134,4 @@ Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 
 
 ## PERSONAL_VARIABLES
 $env:GOOGLE_TOKEN = ""
+$env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"

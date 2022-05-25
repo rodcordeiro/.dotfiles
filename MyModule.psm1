@@ -242,3 +242,172 @@ function clone {
 }
 
 Export-ModuleMember -Function clone
+
+
+function Get-Repositories {
+    $projectFolders = $(Get-ChildItem -Path "~/projetos" -depth 0 -Recurse)
+    $repos = $($projectFolders | ForEach-Object {
+        $f = $_
+        $folders = $(Get-ChildItem -Path "~/projetos/$_" -depth 0 -Recurse) | ForEach-Object {"~/projetos/$f/$_"}
+        $repositories = @()
+        $folders | ForEach-Object {
+            $folder = $_
+            Set-Location $folder
+            $git = isInsideGit
+            if($(git remote -v | Select-String 'fetch')){
+                $remote = $($(git remote -v | Select-String 'fetch').ToString().split('')[1])
+                $branches = $(git branches | select-string -Pattern "  remotes")
+                $result = [pscustomobject]@{
+                    "repo"     = "$remote";
+                    "branches" = @($branches | select-string -Pattern "HEAD" -NotMatch | ForEach-Object { $_.ToString().Replace("  remotes/origin/",'') });
+                    "alias"    = "$(Split-Path -Path $(Resolve-Path -Path $folder) -Leaf)"
+                }
+        
+                $repositories += $result
+            }
+        }
+        $data = [pscustomobject]@{
+            "Parent"="~/projetos/$_";
+            "repos" = $($repositories | ConvertTo-Json)
+        }
+        $data
+    })
+    $($repos | ConvertTo-Json)
+}
+
+Export-ModuleMember -Function Get-Repositories
+
+function Download-Repositories {
+    param(
+        [parameter(ValueFromPipelineByPropertyName)]$Repos
+    )
+    $Repos | ForEach-Object {
+        $Folder = $_
+        if($($(Test-Path -Path $(Resolve-Path -Path $Folder.Parent)) -eq $True)){
+            Set-Location $Folder.Parent
+            $repos = $($Folder.repos | ConvertFrom-Json)
+            $repos | ForEach-Object {
+                clone -Alias $_.alias -Folder $Folder -Path $_.repo
+                if ($_.branches){
+                    $_.branches  | ForEach-Object {
+                        git checkout $_
+                        git pull --set-upstream origin $_
+                    }
+                }
+                git push -u origin --all                
+            }
+        } else {
+            New-Item -Type Directory $Folder.Parent
+            Set-Location $Folder.Parent
+            $repos = $($Folder.repos | ConvertFrom-Json)
+            $repos | ForEach-Object {
+                clone -Alias $_.alias -Folder $Folder -Path $_.repo
+                if ($_.branches){
+                    $_.branches  | ForEach-Object {
+                        git checkout $_
+                        git pull --set-upstream origin $_
+                    }
+                }
+                git push -u origin --all                
+            }
+        }
+    }
+}
+
+Export-ModuleMember -Function Download-Repositories
+
+Function Discord{
+    param(
+        [parameter(ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [String]$Content,
+        [parameter(ValueFromPipelineByPropertyName)][String]$Username = "Lord Vader",
+        [parameter(ValueFromPipelineByPropertyName)][String]$Avatar = "https://rodcordeiro.github.io/shares/img/vader.png",
+        [parameter(ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [String]$Webhook
+    )
+    $headers=@{}
+    $headers.Add("Content-Type", "application/json")
+    $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $cookie = New-Object System.Net.Cookie
+    $cookie.Name = '__dcfduid'
+    $cookie.Value = '70ead174dc3e11ec93a222460b8f3269'
+    $cookie.Domain = 'discord.com'
+    $session.Cookies.Add($cookie)
+    $cookie = New-Object System.Net.Cookie
+    $cookie.Name = '__sdcfduid'
+    $cookie.Value = '70ead174dc3e11ec93a222460b8f3269fc65095b989f46f97df0c8ab371d8eda42a59488273f8ee85f051879a758bd2d'
+    $cookie.Domain = 'discord.com'
+    $session.Cookies.Add($cookie)
+    $cookie = New-Object System.Net.Cookie
+    $cookie.Name = '__cfruid'
+    $cookie.Value = '6b1779458ec0c7a52d5c3823f010c6c2bc22c533-1653492128'
+    $cookie.Domain = 'discord.com'
+    $session.Cookies.Add($cookie)
+    $git_dir = $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
+    $git_index = $PWD.ToString().IndexOf($git_dir)
+    $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)
+    if(!$Content){
+        $Content="Some hello"
+    }
+    $content = @{
+        "content"=$Content;
+        "username"= $Username;
+        "avatar_url"= $Avatar
+    }
+    $Webhook = $env:Discord_Webhook
+    $($content | ConvertTo-Json)
+    Invoke-WebRequest -Uri $Webhook -Method POST -Headers $headers -WebSession $session -Body "$($content | ConvertTo-Json)"
+}
+Export-ModuleMember -Function Discord
+
+
+function Update-Repos {
+    function hasPdaLib{
+        $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
+        $dependencies = $($pkg.Dependencies | Select-String "pdasolutions")
+        
+        if($dependencies){
+            return $True
+        } else {
+            return $False
+        }
+    }
+    function UpdatePDAlib{
+        yarn remove @pdasolutions/web
+        yarn add @pdasolucoes/web
+        
+        $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
+        $scripts = $pkg.scripts.updateLib
+        $scripts
+        if($scripts){
+            $content = $(get-Content -Path .\package.json).Replace("pdasolutions","pdasolucoes")
+            Remove-Item .\package.json -Force
+            New-Item -Type File -Name package.json -Value $content
+        } else {
+            return $False
+        }
+    }
+    
+    $projectFolders = $(Get-ChildItem -Path "~/projetos" -depth 0 -Recurse)
+    $f = 'pda'
+    $folders = $(Get-ChildItem -Path "~/projetos/$f" -depth 0 -Recurse) | ForEach-Object {"~/projetos/$f/$_"}
+    # $repositories = @()
+    $folders | ForEach-Object {
+        $folder = $_
+        Set-Location $folder
+        $git = isInsideGit
+        $lib = hasPdaLib
+        if($git -and $lib){
+            $branch = $(git branch | select-string "\*").ToString().split(" ")[1]
+            UpdatePDAlib
+            git add .
+            git commit -m '[skip ci] Updating pda lib'
+            git push
+            Discord -Webhook $env:disc_darthside
+      }
+    }
+}
+
+Export-ModuleMember -Function Update-Repos
