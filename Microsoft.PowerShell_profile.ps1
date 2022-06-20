@@ -5,6 +5,8 @@ $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encodin
 Import-Module Terminal-Icons
 Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\MyModule.psm1"
 import-module PSScriptAnalyzer
+Import-Module platyPS  # https://github.com/PowerShell/platyPS
+Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-LoggingLevel/
 
 ## Needed modules
 # Microsoft.PowerShell.Management
@@ -22,93 +24,110 @@ import-module PSScriptAnalyzer
 # Set terminal configs
 Set-ConsoleFont "LiterationMono NF"
 Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
+Set-LoggingDefaultLevel -Level 'WARNING'
+Add-LoggingTarget -Name Console
+Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log';Level='WARNING'}
 
 # Clears terminal before starting
 Clear-Host
 
 # Customizing prompt
 function Prompt {
-  <#
+    <#
     .SYNOPSIS
         Changes PS Prompt
     .DESCRIPTION
         Changes PS Prompt
     #>
-  $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-  # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
-  $is_inside_git = isInsideGit
-  if ($is_inside_git) {
-    $git_dir = $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
-    $git_index = $PWD.ToString().IndexOf($git_dir)
-    $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)
-  }
-  else {
-    $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf 
-  }
-  # Write-Host "$($CmdPromptUser.Name.split("\")[1]) " -ForegroundColor green -NoNewline
-
-  if ($IsAdmin) {
-    $Title = "< GODMODE />"
-  }
-  else {
-    $Title = "< RodC0rdeiro />"
-  }
-  $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {" $CmdPromptCurrentFolder"})"
-
-  Write-Host "$CmdPromptCurrentFolder " -NoNewline
-   
-    
-  if ($is_inside_git) {
-    $CurrentBranch = git branch | select-string "\*"
-    Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
-    if (git status | select-string "Changes not staged for commit") {
-      Write-host '* ' -ForegroundColor gray  -NoNewline
-    }
-    elseif (git status | select-string "Changes to be committed:") {
-      Write-host ':: ' -ForegroundColor gray  -NoNewline
-    }
-    elseif (git status | select-string "Your branch is ahead") {
-      Write-host '^ ' -ForegroundColor gray  -NoNewline
-    }
-    elseif (git status | select-string "Your branch is behind") {
-      Write-host '| ' -ForegroundColor gray  -NoNewline
+    $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+    # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
+    $is_inside_git=isInsideGit
+    if ($is_inside_git) {
+      $git_dir= $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
+      $git_index=$PWD.ToString().IndexOf($git_dir)
+      $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)      
     }
     else {
-      Write-host ' ' -ForegroundColor gray  -NoNewline
+        $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf 
     }
-  }
+    # Write-Host "$($CmdPromptUser.Name.split("\")[1]) " -ForegroundColor green -NoNewline
+
+    if ($IsAdmin) {
+        $Title = "< GODMODE />"
+    }
+    else {
+        $Title = "< RodC0rdeiro />"
+    }
+    $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {" $CmdPromptCurrentFolder"})"
+
+    Write-Host "$CmdPromptCurrentFolder " -NoNewline
    
-  return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
+    
+    if ($is_inside_git) {
+        $CurrentBranch = git branch | select-string "\*"
+        Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
+        if (git status | select-string "Changes not staged for commit") {
+                      Write-host '* ' -ForegroundColor gray  -NoNewline
+          }
+        elseif (git status | select-string "Changes to be committed:") {
+                      Write-host ':: ' -ForegroundColor gray  -NoNewline
+        }
+        elseif (git status | select-string "Your branch is ahead") {
+                      Write-host '^ ' -ForegroundColor gray  -NoNewline
+        }
+        elseif (git status | select-string "Your branch is behind") {
+                      Write-host '| ' -ForegroundColor gray  -NoNewline
+        }
+        else {
+            Write-host ' ' -ForegroundColor gray  -NoNewline
+        }
+        if($(Test-Path -Path "$(git rev-parse --show-toplevel)/.deprecated")){
+          Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
+        }
+    }
+   
+    return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
 }
 
 # My personal functions
 Function isInsideGit() {
-  if ($(Split-Path -Path $PWD -Leaf) -ne '.git') {
-    if ($(Test-Path -Path "$PWD\.git") -ne $False) {
-      return Resolve-Path -Path "$PWD"
+  try {
+    if(git rev-parse --is-inside-work-tree) {
+      return $true
     }
-    if ($(Test-Path -Path "$PWD\..\.git") -ne $False) {
-      return Resolve-Path -Path "$PWD\.."
-    }
-    if ($(Test-Path -Path "$PWD\..\..\.git") -ne $False) {
-      return Resolve-Path -Path "$PWD\..\.."
-    }    
-    if ($(Test-Path -Path "$PWD\..\..\..\.git") -ne $False) {
-      return Resolve-Path -Path "$PWD\..\..\.."
-    }
+    return $false
   }
-  else {
-    return Resolve-Path -Path "$PWD"
+  catch {
+    return $false
   }
+  # if ($(Split-Path -Path $PWD -Leaf) -ne '.git') {
+  #   if ($(Test-Path -Path "$PWD\.git") -ne $False) {
+  #     return $true
+  #   }
+  #   if ($(Test-Path -Path "$PWD\..\.git") -ne $False) {
+  #     return $true
+  #   }
+  #   if ($(Test-Path -Path "$PWD\..\..\.git") -ne $False) {
+  #     return $true
+  #   }    
+  #   if ($(Test-Path -Path "$PWD\..\..\..\.git") -ne $False) {
+  #     return $true
+  #   }
+  #   if ($(Test-Path -Path "$PWD\..\..\..\..\.git") -ne $False) {
+  #     return $true
+  #   }
+  #   return $false
+  # }
+  # return $true
 }
 
-function ReloadModule() {
+function ReloadModule(){
   Remove-Module MyModule
   Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\MyModule.psm1"  
 }
 
 function compress() {
-  <#
+    <#
     .SYNOPSIS
     Compress build folder into app zipped file.
     .DESCRIPTION
@@ -116,11 +135,11 @@ function compress() {
     .EXAMPLE
         compress
     #>
-  Compress-Archive .\build\* .\app.zip -Force
+    Compress-Archive .\build\* .\app.zip -Force
 }
 
-function GetAllFiles {
-  $items = @(Get-ChildItem -Hidden; Get-ChildItem)
+function GetAllFiles{
+  $items = @(Get-ChildItem -Hidden;Get-ChildItem)
   $items
 }
  
@@ -133,5 +152,7 @@ Set-Alias la GetAllFiles
 Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 18\Common7\IDE\ssms.exe"
 
 ## PERSONAL_VARIABLES
+$env:PAT=""
 $env:GOOGLE_TOKEN = ""
 $env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
+$env:disc_testes = ""
