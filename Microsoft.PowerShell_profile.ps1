@@ -3,10 +3,12 @@ $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encodin
 
 # Modules imports
 Import-Module Terminal-Icons
-Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\MyModule.psm1"
 import-module PSScriptAnalyzer
 Import-Module platyPS  # https://github.com/PowerShell/platyPS
 Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-LoggingLevel/
+
+Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\authoral_functions.psm1"
+Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\imported_functions.psm1"
 
 ## Needed modules
 # Microsoft.PowerShell.Management
@@ -122,8 +124,10 @@ Function isInsideGit() {
 }
 
 function ReloadModule(){
-  Remove-Module MyModule
-  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\MyModule.psm1"  
+  Remove-Module authoral_functions
+  Remove-Module imported_functions
+  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\authoral_functions.psm1"
+  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\imported_functions.psm1"
 }
 
 function compress() {
@@ -143,6 +147,11 @@ function GetAllFiles{
   $items
 }
  
+function ReloadPDA {
+  remove-module pda;
+  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pda.psm1" -Verbose
+}
+
 ## ALIASES
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
 Set-Alias activate ".\.venv\scripts\activate"
