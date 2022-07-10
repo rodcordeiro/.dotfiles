@@ -6,9 +6,9 @@ Import-Module Terminal-Icons
 import-module PSScriptAnalyzer
 Import-Module platyPS  # https://github.com/PowerShell/platyPS
 Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-LoggingLevel/
+Import-Module PSSQLite # https://github.com/RamblingCookieMonster/PSSQLite
 
-Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\authoral_functions.psm1"
-Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\imported_functions.psm1"
+Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"
 
 ## Needed modules
 # Microsoft.PowerShell.Management
@@ -28,73 +28,73 @@ Set-ConsoleFont "LiterationMono NF"
 Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
 Set-LoggingDefaultLevel -Level 'WARNING'
 Add-LoggingTarget -Name Console
-Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log';Level='WARNING'}
+Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log'; Level = 'WARNING' }
 
 # Clears terminal before starting
 Clear-Host
 
 # Customizing prompt
 function Prompt {
-    <#
+  <#
     .SYNOPSIS
         Changes PS Prompt
     .DESCRIPTION
         Changes PS Prompt
     #>
-    $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-    # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
-    $is_inside_git=isInsideGit
-    if ($is_inside_git) {
-      $git_dir= $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
-      $git_index=$PWD.ToString().IndexOf($git_dir)
-      $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)      
-    }
-    else {
-        $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf 
-    }
-    # Write-Host "$($CmdPromptUser.Name.split("\")[1]) " -ForegroundColor green -NoNewline
+  $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+  # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
+  $is_inside_git = isInsideGit
+  if ($is_inside_git) {
+    $git_dir = $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
+    $git_index = $PWD.ToString().IndexOf($git_dir)
+    $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)      
+  }
+  else {
+    $CmdPromptCurrentFolder = Split-Path -Path $pwd -Leaf 
+  }
+  # Write-Host "$($CmdPromptUser.Name.split("\")[1]) " -ForegroundColor green -NoNewline
 
-    if ($IsAdmin) {
-        $Title = "< GODMODE />"
-    }
-    else {
-        $Title = "< RodC0rdeiro />"
-    }
-    $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {" $CmdPromptCurrentFolder"})"
+  if ($IsAdmin) {
+    $Title = "< GODMODE />"
+  }
+  else {
+    $Title = "< RodC0rdeiro />"
+  }
+  $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {" $CmdPromptCurrentFolder"})"
 
-    Write-Host "$CmdPromptCurrentFolder " -NoNewline
+  Write-Host "$CmdPromptCurrentFolder " -NoNewline
    
     
-    if ($is_inside_git) {
-        $CurrentBranch = git branch | select-string "\*"
-        Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
-        if (git status | select-string "Changes not staged for commit") {
-                      Write-host '* ' -ForegroundColor gray  -NoNewline
-          }
-        elseif (git status | select-string "Changes to be committed:") {
-                      Write-host ':: ' -ForegroundColor gray  -NoNewline
-        }
-        elseif (git status | select-string "Your branch is ahead") {
-                      Write-host '^ ' -ForegroundColor gray  -NoNewline
-        }
-        elseif (git status | select-string "Your branch is behind") {
-                      Write-host '| ' -ForegroundColor gray  -NoNewline
-        }
-        else {
-            Write-host ' ' -ForegroundColor gray  -NoNewline
-        }
-        if($(Test-Path -Path "$(git rev-parse --show-toplevel)/.deprecated")){
-          Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
-        }
+  if ($is_inside_git) {
+    $CurrentBranch = git branch | select-string "\*"
+    Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
+    if (git status | select-string "Changes not staged for commit") {
+      Write-host '* ' -ForegroundColor gray  -NoNewline
     }
+    elseif (git status | select-string "Changes to be committed:") {
+      Write-host ':: ' -ForegroundColor gray  -NoNewline
+    }
+    elseif (git status | select-string "Your branch is ahead") {
+      Write-host '^ ' -ForegroundColor gray  -NoNewline
+    }
+    elseif (git status | select-string "Your branch is behind") {
+      Write-host '| ' -ForegroundColor gray  -NoNewline
+    }
+    else {
+      Write-host ' ' -ForegroundColor gray  -NoNewline
+    }
+    if ($(Test-Path -Path "$(git rev-parse --show-toplevel)/.deprecated")) {
+      Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
+    }
+  }
    
-    return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
+  return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
 }
 
 # My personal functions
 Function isInsideGit() {
   try {
-    if(git rev-parse --is-inside-work-tree) {
+    if (git rev-parse --is-inside-work-tree) {
       return $true
     }
     return $false
@@ -123,15 +123,13 @@ Function isInsideGit() {
   # return $true
 }
 
-function ReloadModule(){
-  Remove-Module authoral_functions
-  Remove-Module imported_functions
-  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\authoral_functions.psm1"
-  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\imported_functions.psm1"
+function ReloadModule() {
+  Remove-Module mymodule  
+  Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"  
 }
 
 function compress() {
-    <#
+  <#
     .SYNOPSIS
     Compress build folder into app zipped file.
     .DESCRIPTION
@@ -139,17 +137,17 @@ function compress() {
     .EXAMPLE
         compress
     #>
-    Compress-Archive .\build\* .\app.zip -Force
+  Compress-Archive .\build\* .\app.zip -Force
 }
 
-function GetAllFiles{
-  $items = @(Get-ChildItem -Hidden;Get-ChildItem)
+function GetAllFiles {
+  $items = @(Get-ChildItem -Hidden; Get-ChildItem)
   $items
 }
  
 function ReloadPDA {
   remove-module pda;
-  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pda.psm1" -Verbose
+  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pda.psd1" -Verbose
 }
 
 ## ALIASES
@@ -159,9 +157,10 @@ Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio
 Set-Alias yt "C:\tools\youtube-dl.exe"
 Set-Alias la GetAllFiles
 Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 18\Common7\IDE\ssms.exe"
+Set-Alias '??' Get-GoogleAnswer
 
 ## PERSONAL_VARIABLES
-$env:PAT=""
+$env:PAT = ""
 $env:GOOGLE_TOKEN = ""
 $env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
 $env:disc_testes = ""
