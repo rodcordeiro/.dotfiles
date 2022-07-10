@@ -214,7 +214,7 @@ Function Discord {
         "username"   = $Username;
         "avatar_url" = $Avatar
     }    
-    if(!$Webhook){
+    if (!$Webhook) {
         $Webhook = $env:disc_testes
     }
 
@@ -222,8 +222,7 @@ Function Discord {
 }
 Export-ModuleMember -Function Discord
 
-function Update-Repos {
-    # function hasPdaLib{
+# function hasPdaLib{
     #     $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
     #     $dependencies = $($pkg.Dependencies | Select-String "pdasolutions")
         
@@ -243,16 +242,16 @@ function Update-Repos {
     #     if($scripts){
     #         $content = $(get-Content -Path .\package.json).Replace("pdasolutions","pdasolucoes")
     #         Remove-Item .\package.json -Force
-    #         New-Item -Type File -Name package.json -Value $content
+    #         New-Item -Type File -Name package.json -Value $content.ToString()
     #     } else {
     #         return $False
-        # }
+    # }
     # }
     
-    # $projectFolders = $(Get-ChildItem -Path "~/projetos" -depth 0 -Recurse)
-    # $f = 'pda'
+
+function Update-Repos {
+    
     $folders = Get-Repositories
-    # $repositories = @()
     Discord -Avatar "https://rodcordeiro.github.io/shares/img/eu.jpg" -Username "Script do rod" -Webhook $env:disc_testes -Content "Ignorem. Estou rodando um script de atualizacao automatica dos repositorios"
     $folders | ForEach-Object {
         $folder = $_
@@ -263,19 +262,36 @@ function Update-Repos {
             Set-Location $repo
             $git = isInsideGit
             # $lib = hasPdaLib
-            if($git -and $(git remote -v | Select-String 'fetch')){
-                # $branch = $(git branch | select-string "\*").ToString().split(" ")[1]
+            if ($git -and $(git remote -v | Select-String 'fetch')) {
+                $branches = $(git branch | select-string -NotMatch "remote")
+                $currentBranch = ''
+                $branches | ForEach-Object {
+                    if ($(git status | select-string "Changes not staged for commit") -or $(git status | select-string "Changes to be committed:")) {
+                        git add .
+                        git commit -m '[skip ci] Automatic repositories update'
+                    }
+                    git checkout $branch
+                    $branch = $_.ToString().Replace(' ','')
+                    if ($branch -match '\*') {
+                        $branch = $branch.split(" ")[1]
+                        $currentBranch = $branch
+                    }
+                    
+                    git add .
+                    git commit -m '[skip ci] Automatic repositories update'
+                    git pull origin 
+                    git push -u origin $branch
+                }
+                Write-Output $currentBranch
+
+                
                 # UpdatePDAlib
                 $git_dir = $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
                 $git_index = $PWD.ToString().IndexOf($git_dir)
                 $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)
 
-                git add .
-                git commit -m '[skip ci] Updating repositories'
-                git pull origin --all
-                git push -u origin --all
-                Discord -Avatar "https://rodcordeiro.github.io/shares/img/eu.jpg" -Content "Atualizado o $CmdPromptCurrentFolder" -Username "Script do rod" -Webhook $env:disc_darthside
-          }
+                Discord -Avatar "https://rodcordeiro.github.io/shares/img/eu.jpg" -Content "Atualizado o $CmdPromptCurrentFolder" -Username "Script do rod" -Webhook $env:disc_testes
+            }
         }
     }
 }
@@ -294,7 +310,7 @@ Function ConvertTo-B64 {
 
 Export-ModuleMember -Function ConvertTo-B64
 
-function Timer{
+function Timer {
     param(
         [parameter(ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
@@ -304,3 +320,46 @@ function Timer{
     node -e "setTimeout(()=>console.log('Time finished'),$($Time * 1000))"
 }
 Export-ModuleMember -Function Timer
+
+function ConvertTo-MarkdownTable {
+    param(
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Columns,
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory = $false)]
+        [string[]]$RowsLabel,
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [PSCustomObject[]]$Rows,
+        [Parameter(ValueFromPipelineByPropertyName, Mandatory = $false)]
+        [string]$OutFile
+    )
+    $table = @()
+    $table += $(if ($RowsLabel) { '| ' }) + [String]::Join("", $($Columns | foreach-Object { "|$($_)" })) + "|"
+    $table += $(if ($RowsLabel) { '|:- ' }) + [String]::Join("", $($Columns | foreach-Object { "|:-:" })) + "|"
+    if ($RowsLabel) {
+        $table += $RowsLabel | foreach-object {
+            $app = $_ 
+            return "|$app" + [String]::Join("", $($Columns | foreach-Object { "|$($Rows.$_.$app)" })) + "|"
+        }
+        
+    }
+    else {
+        $table += $Rows | foreach-object {
+            $row = $_
+            return [String]::Join("", $($Columns | foreach-Object { "|$($row.$_)" })) + "|"
+        }
+    }
+    if ($OutFile) {
+        New-Item -Type file -Path $OutFile | Out-Null
+        $table | ForEach-Object {
+            Add-Content  -Path $OutFile -Value $_
+        }
+    }
+    else {
+        return $table
+    }
+
+}
+
+Export-ModuleMember -Function ConvertTo-MarkdownTable
