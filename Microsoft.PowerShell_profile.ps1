@@ -7,6 +7,8 @@ import-module PSScriptAnalyzer
 Import-Module platyPS  # https://github.com/PowerShell/platyPS
 Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-LoggingLevel/
 Import-Module PSSQLite # https://github.com/RamblingCookieMonster/PSSQLite
+Import-Module SecurityFever
+Import-Module ProfileFever
 
 Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"
 
@@ -146,8 +148,8 @@ function GetAllFiles {
 }
  
 function ReloadPDA {
-  remove-module pda;
-  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pda.psd1" -Verbose
+  remove-module pspda;
+  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pspda.psd1" -Verbose
 }
 
 ## ALIASES
@@ -164,3 +166,14 @@ $env:PAT = ""
 $env:GOOGLE_TOKEN = ""
 $env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
 $env:disc_testes = ""
+$env:PSGToken = "" 
+
+# Import the Chocolatey Profile that contains the necessary code to enable
+# tab-completions to function for `choco`.
+# Be aware that if you are missing these lines from your profile, tab completion
+# for `choco` will not function.
+# See https://ch0.co/tab-completion for details.
+$ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+if (Test-Path($ChocolateyProfile)) {
+  Import-Module "$ChocolateyProfile"
+}

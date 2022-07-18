@@ -314,10 +314,11 @@ function Timer {
     param(
         [parameter(ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
+        [Int]
         $Time
     )
-    # Timeout /T $time    
-    node -e "setTimeout(()=>console.log('Time finished'),$($Time * 1000))"
+    
+    node -e "const current = new Date();let time_to_await = $Time * 1000;const timer = current.getTime() + time_to_await,  timerParsed = new Date(timer);const interval = setInterval(() => {  if (time_to_await === 0) {    clearInterval(interval);  }  process.stdout.clearLine(0);  process.stdout.cursorTo(0);  process.stdout.write('Time remaining: '+time_to_await / 1000+'s');  time_to_await -= 1000;}, 1000);"
 }
 Export-ModuleMember -Function Timer
 

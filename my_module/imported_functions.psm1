@@ -52,7 +52,7 @@ function Show-Calendar {
         [DateTime] $end = $start,
         $firstDayOfWeek,
         [int[]] $highlightDay,
-        [string[]] $highlightDate = [DateTime]::Today.ToString()
+        [string[]] $highlightDate = [DateTime]::Today
     )
     
     ## Determine the first day of the start and end months.
@@ -1512,9 +1512,9 @@ Function ConvertTo-FlatObject {
 #URL: https://github.com/IGDEXE/PS-Google-Catch/blob/master/GoogleSearch.psm1
 function Get-GoogleAnswer {
     param (
+        [Parameter(Mandatory, ValueFromRemainingArguments)]    
         $mensagemErro
     )
-
     # Abre uma pesquisa com o termo que deu erro
     Start-Process "https://www.google.com/search?q=$mensagemErro"
 }
