@@ -33,7 +33,46 @@ Add-LoggingTarget -Name Console
 Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log'; Level = 'WARNING' }
 
 # Clears terminal before starting
-Clear-Host
+# Clear-Host
+
+# Readline options
+## Tab completion
+Set-PSReadlineKeyHandler -Key Tab -Function Complete
+Set-PSReadlineOption -ShowToolTips
+
+$Glyphs = [PSCustomObject]@{
+  Branch  = "$([char]0xE0A0)" #  Version control branch
+  LN      = "$([char]0xE0A1)" #  LN (line) symbol
+  Padlock = "$([char]0xE0A2)" #  Closed padlock
+  TArrow  = "$([char]0x2191)"
+  DArrow  = "$([char]0x2193)" #  Rightwards black arrowhead
+  RArrow  = "$([char]0xE0B0)" #  Rightwards black arrowhead
+  WRArrow = "$([char]0xE0B1)" #  Rightwards arrowhead
+  LArrow  = "$([char]0xE0B2)" #  Leftwards black arrowhead
+  WLArrow = "$([char]0xE0B3)" #  Leftwards arrowhead
+  NBSP    = "$([char]0x00A0)"
+  MENU    = "$([char]0x2261)"
+}
+
+# BG = FG
+enum Colors {
+  Black = "9"
+  DarkBlue = "15"
+  DarkGreen = "15"
+  DarkCyan = "0"
+  DarkRed = "15"
+  DarkMagenta = "15"
+  DarkYellow = "0"
+  Gray = "0"
+  DarkGray = "6"
+  Blue = "0"
+  Green = "0"
+  Cyan = "0"
+  Red = "0"
+  Magenta = "0"
+  Yellow = "0"
+  White = "0"
+}
 
 # Customizing prompt
 function Prompt {
@@ -43,10 +82,17 @@ function Prompt {
     .DESCRIPTION
         Changes PS Prompt
     #>
+  $BackgroundColor = [Console]::BackgroundColor
   $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
   # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
   $is_inside_git = isInsideGit
+  
   if ($is_inside_git) {
+    Write-Host $Glyphs.NBSP -BackgroundColor $([Colors]::$BackgroundColor).value__ -NoNewline
+    Write-Host $Glyphs.Branch -BackgroundColor $([Colors]::$BackgroundColor).value__ -ForegroundColor $BackgroundColor -NoNewline
+    Write-Host $Glyphs.RArrow -ForegroundColor $([Colors]::$BackgroundColor).value__ -NoNewline
+    Write-Host $Glyphs.NBSP -BackgroundColor $BackgroundColor -NoNewline
+    
     $git_dir = $(Split-Path -Path $(git rev-parse --show-toplevel) -Leaf)
     $git_index = $PWD.ToString().IndexOf($git_dir)
     $CmdPromptCurrentFolder = $PWD.ToString().Substring($git_index)      
@@ -65,22 +111,21 @@ function Prompt {
   $host.ui.rawui.WindowTitle = $Title + "$(if($PWD.Path -eq $env:USERPROFILE){" ~HOME"} else {" $CmdPromptCurrentFolder"})"
 
   Write-Host "$CmdPromptCurrentFolder " -NoNewline
-   
     
   if ($is_inside_git) {
     $CurrentBranch = git branch | select-string "\*"
     Write-Host "($($CurrentBranch.ToString().split(" ")[1]))" -ForegroundColor cyan -NoNewline
     if (git status | select-string "Changes not staged for commit") {
-      Write-host '* ' -ForegroundColor gray  -NoNewline
+      Write-host '*' -ForegroundColor gray  -NoNewline
     }
     elseif (git status | select-string "Changes to be committed:") {
-      Write-host ':: ' -ForegroundColor gray  -NoNewline
+      Write-host '::' -ForegroundColor gray  -NoNewline
     }
     elseif (git status | select-string "Your branch is ahead") {
-      Write-host '^ ' -ForegroundColor gray  -NoNewline
+      Write-host $Glyphs.TArrow -ForegroundColor gray  -NoNewline
     }
     elseif (git status | select-string "Your branch is behind") {
-      Write-host '| ' -ForegroundColor gray  -NoNewline
+      Write-host $Glyphs.DArrow -ForegroundColor gray  -NoNewline
     }
     else {
       Write-host ' ' -ForegroundColor gray  -NoNewline
@@ -90,7 +135,8 @@ function Prompt {
     }
   }
    
-  return "$(if ($IsAdmin) { ' #' } else { ' $' })> "    
+      
+  return "$(if ($IsAdmin) { ' #' } else { ' $' })> "
 }
 
 # My personal functions
@@ -104,25 +150,6 @@ Function isInsideGit() {
   catch {
     return $false
   }
-  # if ($(Split-Path -Path $PWD -Leaf) -ne '.git') {
-  #   if ($(Test-Path -Path "$PWD\.git") -ne $False) {
-  #     return $true
-  #   }
-  #   if ($(Test-Path -Path "$PWD\..\.git") -ne $False) {
-  #     return $true
-  #   }
-  #   if ($(Test-Path -Path "$PWD\..\..\.git") -ne $False) {
-  #     return $true
-  #   }    
-  #   if ($(Test-Path -Path "$PWD\..\..\..\.git") -ne $False) {
-  #     return $true
-  #   }
-  #   if ($(Test-Path -Path "$PWD\..\..\..\..\.git") -ne $False) {
-  #     return $true
-  #   }
-  #   return $false
-  # }
-  # return $true
 }
 
 function ReloadModule() {
@@ -160,6 +187,7 @@ Set-Alias yt "C:\tools\youtube-dl.exe"
 Set-Alias la GetAllFiles
 Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 18\Common7\IDE\ssms.exe"
 Set-Alias '??' Get-GoogleAnswer
+Set-Alias 'Check-Network' Read-NetworkSpeed
 
 ## PERSONAL_VARIABLES
 $env:PAT = ""

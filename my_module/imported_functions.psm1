@@ -146,9 +146,8 @@ Export-ModuleMember -Function Show-Calendar
 
 # Author: Adam the Automator
 # URL: https://github.com/adbertram/Random-PowerShell-Work/blob/master/PowerShell%20Internals/Write-Params.ps1
-function Write-Param
-{
-	<#
+function Write-Param {
+    <#
 	.SYNOPSIS
 		Write-Param is a simple function that writes the parameters used for the calling function out to the console. This is useful
 		 in debugging situations where you have function "trees" where you have dozens of functions calling each and want to see
@@ -178,49 +177,45 @@ function Write-Param
 		Function: Get-LocalGroup - Params used: {Param1=hello, Param2=whatsup}
 		
 	#>
-	[CmdletBinding()]
-	param ()
-	$caller = (Get-PSCallStack)[1]
-	Write-Verbose -Message "Function: $($caller.Command) - Params used: $($caller.Arguments)"
+    [CmdletBinding()]
+    param ()
+    $caller = (Get-PSCallStack)[1]
+    Write-Verbose -Message "Function: $($caller.Command) - Params used: $($caller.Arguments)"
 }
 
 Export-ModuleMember -Function Write-Param
 
 # Author: Adam the Automator
 # URL: https://github.com/adbertram/Random-PowerShell-Work/blob/master/PowerShell%20Internals/ConvertTo-CleanScript.ps1
-function ConvertTo-CleanScript
-{
-	[CmdletBinding()]
-	param
-	(
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string]$Path,
+function ConvertTo-CleanScript {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path,
 	
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string[]]$ToRemove = ''
-	)
-	begin {
-		$ErrorActionPreference = 'Stop'
-	}
-	process {
-		try
-		{
-			$Ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$null)	
-		}
-		catch
-		{
-			Write-Error $_.Exception.Message
-		}
-	}
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$ToRemove = ''
+    )
+    begin {
+        $ErrorActionPreference = 'Stop'
+    }
+    process {
+        try {
+            $Ast = [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$null, [ref]$null)	
+        }
+        catch {
+            Write-Error $_.Exception.Message
+        }
+    }
 }
 Export-ModuleMember -Function ConvertTo-CleanScript
 
 # Author: Adam the Automator
 # URL: https://github.com/adbertram/Random-PowerShell-Work/blob/master/Random%20Stuff/Invoke-WindowsDiskCleanup.ps1
-Function Invoke-ClearDisk
-{
+Function Invoke-ClearDisk {
     Write-Log -Message 'Clearing CleanMgr.exe automation settings.'
 
     $getItemParams = @{
@@ -290,38 +285,38 @@ Export-ModuleMember -Function Invoke-ClearDisk
 # Author: Adam the Automator
 # URL: https://github.com/adbertram/Random-PowerShell-Work/blob/master/Random%20Stuff/Confirm-Choice.ps1
 function Confirm-Choice {
-	[OutputType('boolean')]
-	[CmdletBinding()]
-	param
-	(		
-		[Parameter()]
-		[ValidateNotNullOrEmpty()]
-		[string]$Title,
+    [OutputType('boolean')]
+    [CmdletBinding()]
+    param
+    (		
+        [Parameter()]
+        [ValidateNotNullOrEmpty()]
+        [string]$Title,
 
-		[Parameter(Mandatory)]
-		[ValidateNotNullOrEmpty()]
-		[string]$PromptMessage
-	)
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PromptMessage
+    )
 
-	$yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes"
-	$no = New-Object System.Management.Automation.Host.ChoiceDescription "&No"
-	$options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
+    $yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes"
+    $no = New-Object System.Management.Automation.Host.ChoiceDescription "&No"
+    $options = [System.Management.Automation.Host.ChoiceDescription[]]($yes, $no)
 	
-	if ($PSBoundParameters.ContainsKey('Title')) {
-		Write-Host -Object $Title -ForegroundColor Cyan	
-	}
+    if ($PSBoundParameters.ContainsKey('Title')) {
+        Write-Host -Object $Title -ForegroundColor Cyan	
+    }
 	
-	Write-Host -Object $PromptMessage -ForegroundColor Cyan	
-	$result = $host.ui.PromptForChoice($null, $null, $Options, 1) 
+    Write-Host -Object $PromptMessage -ForegroundColor Cyan	
+    $result = $host.ui.PromptForChoice($null, $null, $Options, 1) 
 
-	switch ($result) {
-		0 {
-			$true
-		}
-		1 {
-			$false
-		}
-	}
+    switch ($result) {
+        0 {
+            $true
+        }
+        1 {
+            $false
+        }
+    }
 }
 
 Export-ModuleMember -Function Confirm-Choice
@@ -335,12 +330,13 @@ function ConvertFrom-Timestamp {
     $millisStamp = ($epochStart + ([System.TimeSpan]::frommilliseconds($unixTimeStamp))).ToLocalTime()
     $millisStampOutput = $millisStamp.ToString("yyyy-MM-dd HH:mm:ss.ffffff")
     # $millisStampClipboard = $millisStamp.ToString("HH:mm:ss.ffffff") 
-    if($Verbose){ 
+    if ($Verbose) { 
         Write-Host "~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         Write-Host "Datetime: $millisStampOutput" -ForegroundColor Cyan
         # Write-Host "Clipping: $millisStampClipboard" -ForegroundColor Cyan
         Write-Host "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"    
-    } else {
+    }
+    else {
         Write-Host $millisStampOutput
     }
 
@@ -432,45 +428,45 @@ function Get-ScheduledTasks {
 
     #>
     [cmdletbinding(
-        DefaultParameterSetName='COM'
+        DefaultParameterSetName = 'COM'
     )]
     param(
         [parameter(
-            ValueFromPipeline=$true,
-            ValueFromPipelineByPropertyName=$true, 
-            ValueFromRemainingArguments=$false, 
-            Position=0
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true, 
+            ValueFromRemainingArguments = $false, 
+            Position = 0
         )]
-        [Alias("host","server","computer")]
+        [Alias("host", "server", "computer")]
         [string[]]$ComputerName = "localhost",
 
         [parameter()]
         [string]$folder = "\",
 
-        [parameter(ParameterSetName='COM')]
+        [parameter(ParameterSetName = 'COM')]
         [switch]$recurse,
 
-        [parameter(ParameterSetName='COM')]
+        [parameter(ParameterSetName = 'COM')]
         [validatescript({
-            #Test path if provided, otherwise allow $null
-            if($_){
-                Test-Path -PathType Container -path $_ 
-            }
-            else {
-                $true
-            }
-        })]
+                #Test path if provided, otherwise allow $null
+                if ($_) {
+                    Test-Path -PathType Container -path $_ 
+                }
+                else {
+                    $true
+                }
+            })]
         [string]$Path = $null,
 
         [parameter()]
         [string]$Exclude = $null,
 
-        [parameter(ParameterSetName='SchTasks')]
+        [parameter(ParameterSetName = 'SchTasks')]
         [switch]$CompatibilityMode
     )
-    Begin{
+    Begin {
 
-        if(-not $CompatibilityMode){
+        if (-not $CompatibilityMode) {
             $sch = New-Object -ComObject Schedule.Service
         
             #thanks to Jaap Brasser - http://gallery.technet.microsoft.com/scriptcenter/Get-Scheduled-tasks-from-3a377294
@@ -490,39 +486,38 @@ function Get-ScheduledTasks {
                 }
                 #Recurse?  Build up an array!
                 else {
-                    Try{
+                    Try {
                         #This will fail on older systems...
                         $folders = $folderRef.getfolders(1)
 
                         #Extract results into array
                         $ArrFolders = @(
-                            if($folders) {
+                            if ($folders) {
                                 foreach ($fold in $folders) {
                                     $fold
-                                    if($fold.getfolders(1)) {
+                                    if ($fold.getfolders(1)) {
                                         Get-AllTaskSubFolders -FolderRef $fold
                                     }
                                 }
                             }
                         )
                     }
-                    Catch{
+                    Catch {
                         #If we failed and the expected error, return folder ref only!
-                        if($_.tostring() -like '*Exception calling "GetFolders" with "1" argument(s): "The request is not supported.*')
-                        {
+                        if ($_.tostring() -like '*Exception calling "GetFolders" with "1" argument(s): "The request is not supported.*') {
                             $folders = $null
                             Write-Warning "GetFolders failed, returning root folder only: $_"
                             Return $FolderRef
                         }
-                        else{
+                        else {
                             Throw $_
                         }
                     }
 
                     #Return only unique results
-                        $Results = @($ArrFolders) + @($FolderRef)
-                        $UniquePaths = $Results | select -ExpandProperty path -Unique
-                        $Results | ?{$UniquePaths -contains $_.path}
+                    $Results = @($ArrFolders) + @($FolderRef)
+                    $UniquePaths = $Results | select -ExpandProperty path -Unique
+                    $Results | ? { $UniquePaths -contains $_.path }
                 }
             } #Get-AllTaskSubFolders
         }
@@ -534,34 +529,34 @@ function Get-ScheduledTasks {
             #we format the properties to match those returned from com objects
             $result = @( schtasks.exe /query /v /s $computername /fo csv |
                 convertfrom-csv |
-                ?{$_.taskname -ne "taskname" -and $_.taskname -match $( $folder.replace("\","\\") ) } |
+                ? { $_.taskname -ne "taskname" -and $_.taskname -match $( $folder.replace("\", "\\") ) } |
                 select @{ label = "ComputerName"; expression = { $computername } },
-                    @{ label = "Name"; expression = { $_.TaskName } },
-                    @{ label = "Action"; expression = {$_."Task To Run"} },
-                    @{ label = "LastRunTime"; expression = {$_."Last Run Time"} },
-                    @{ label = "NextRunTime"; expression = {$_."Next Run Time"} },
-                    "Status",
-                    "Author"
+                @{ label = "Name"; expression = { $_.TaskName } },
+                @{ label = "Action"; expression = { $_."Task To Run" } },
+                @{ label = "LastRunTime"; expression = { $_."Last Run Time" } },
+                @{ label = "NextRunTime"; expression = { $_."Next Run Time" } },
+                "Status",
+                "Author"
             )
 
-            if($CompatibilityMode){
+            if ($CompatibilityMode) {
                 #User requested compat mode, don't add props
                 $result    
             }
-            else{
+            else {
                 #If this was a failback, we don't want to affect display of props for comps that don't fail... include empty props expected for com object
                 #We also extract task name and path to parent for the Name and Path props, respectively
-                foreach($item in $result){
+                foreach ($item in $result) {
                     $name = @( $item.Name -split "\\" )[-1]
                     $taskPath = $item.name
-                    $item | select ComputerName, @{ label = "Name"; expression = {$name}}, @{ label = "Path"; Expression = {$taskPath}}, Enabled, Action, Arguments, UserId, LastRunTime, NextRunTime, Status, Author, RunLevel, Description, NumberOfMissedRuns
+                    $item | select ComputerName, @{ label = "Name"; expression = { $name } }, @{ label = "Path"; Expression = { $taskPath } }, Enabled, Action, Arguments, UserId, LastRunTime, NextRunTime, Status, Author, RunLevel, Description, NumberOfMissedRuns
                 }
             }
         } #Get-SchTasks
     }    
-    Process{
+    Process {
         #loop through computers
-        foreach($computer in $computername){
+        foreach ($computer in $computername) {
         
             #bool in case com object fails, fall back to schtasks
             $failed = $false
@@ -570,67 +565,65 @@ function Get-ScheduledTasks {
             Try {
             
                 #use com object unless in compatibility mode.  Set compatibility mode if this fails
-                if(-not $compatibilityMode){      
+                if (-not $compatibilityMode) {      
 
-                    Try{
+                    Try {
                         #Connect to the computer
                         $sch.Connect($computer)
                         
-                        if($recurse)
-                        {
+                        if ($recurse) {
                             $AllFolders = Get-AllTaskSubFolders -FolderRef $sch.GetFolder($folder) -recurse -ErrorAction stop
                         }
-                        else
-                        {
+                        else {
                             $AllFolders = Get-AllTaskSubFolders -FolderRef $sch.GetFolder($folder) -ErrorAction stop
                         }
                         Write-verbose "Looking through $($AllFolders.count) folders on $computer"
                 
-                        foreach($fold in $AllFolders){
+                        foreach ($fold in $AllFolders) {
                 
                             #Get tasks in this folder
                             $tasks = $fold.GetTasks(0)
                 
                             Write-Verbose "Pulling data from $($tasks.count) tasks on $computer in $($fold.name)"
-                            foreach($task in $tasks){
+                            foreach ($task in $tasks) {
                             
                                 #extract helpful items from XML
-                                $Author = ([regex]::split($task.xml,'<Author>|</Author>'))[1] 
-                                $UserId = ([regex]::split($task.xml,'<UserId>|</UserId>'))[1] 
-                                $Description =([regex]::split($task.xml,'<Description>|</Description>'))[1]
-                                $Action = ([regex]::split($task.xml,'<Command>|</Command>'))[1]
-                                $Arguments = ([regex]::split($task.xml,'<Arguments>|</Arguments>'))[1]
-                                $RunLevel = ([regex]::split($task.xml,'<RunLevel>|</RunLevel>'))[1]
-                                $LogonType = ([regex]::split($task.xml,'<LogonType>|</LogonType>'))[1]
+                                $Author = ([regex]::split($task.xml, '<Author>|</Author>'))[1] 
+                                $UserId = ([regex]::split($task.xml, '<UserId>|</UserId>'))[1] 
+                                $Description = ([regex]::split($task.xml, '<Description>|</Description>'))[1]
+                                $Action = ([regex]::split($task.xml, '<Command>|</Command>'))[1]
+                                $Arguments = ([regex]::split($task.xml, '<Arguments>|</Arguments>'))[1]
+                                $RunLevel = ([regex]::split($task.xml, '<RunLevel>|</RunLevel>'))[1]
+                                $LogonType = ([regex]::split($task.xml, '<LogonType>|</LogonType>'))[1]
                             
                                 #convert state to status
                                 Switch ($task.State) { 
-                                    0 {$Status = "Unknown"} 
-                                    1 {$Status = "Disabled"} 
-                                    2 {$Status = "Queued"} 
-                                    3 {$Status = "Ready"} 
-                                    4 {$Status = "Running"} 
+                                    0 { $Status = "Unknown" } 
+                                    1 { $Status = "Disabled" } 
+                                    2 { $Status = "Queued" } 
+                                    3 { $Status = "Ready" } 
+                                    4 { $Status = "Running" } 
                                 }
 
                                 #output the task details
-                                if(-not $exclude -or $task.Path -notmatch $Exclude){
+                                if (-not $exclude -or $task.Path -notmatch $Exclude) {
                                     $task | select @{ label = "ComputerName"; expression = { $computer } }, 
-                                        Name,
-                                        Path,
-                                        Enabled,
-                                        @{ label = "Action"; expression = {$Action} },
-                                        @{ label = "Arguments"; expression = {$Arguments} },
-                                        @{ label = "UserId"; expression = {$UserId} },
-                                        LastRunTime,
-                                        NextRunTime,
-                                        @{ label = "Status"; expression = {$Status} },
-                                        @{ label = "Author"; expression = {$Author} },
-                                        @{ label = "RunLevel"; expression = {$RunLevel} },
-                                        @{ label = "Description"; expression = {$Description} },
-                                        NumberOfMissedRuns
+                                    Name,
+                                    Path,
+                                    Enabled,
+                                    @{ label = "Action"; expression = { $Action } },
+                                    @{ label = "Arguments"; expression = { $Arguments } },
+                                    @{ label = "UserId"; expression = { $UserId } },
+                                    LastRunTime,
+                                    NextRunTime,
+                                    @{ label = "Status"; expression = { $Status } },
+                                    @{ label = "Author"; expression = { $Author } },
+                                    @{ label = "RunLevel"; expression = { $RunLevel } },
+                                    @{ label = "Description"; expression = { $Description } },
+                                    NumberOfMissedRuns
                             
                                     #if specified, output the results in importable XML format
-                                    if($path){
+                                    if ($path) {
                                         $xml = $task.Xml
                                         $taskname = $task.Name
                                         $xml | Out-File $( Join-Path $path "$computer-$taskname.xml" )
@@ -639,12 +632,12 @@ function Get-ScheduledTasks {
                             }
                         }
                     }
-                    Catch{
+                    Catch {
                         Write-Warning "Could not pull scheduled tasks from $computer using COM object, falling back to schtasks.exe"
-                        Try{
+                        Try {
                             Get-SchTasks -computername $computer -folder $folder -ErrorAction stop
                         }
-                        Catch{
+                        Catch {
                             Write-Error "Could not pull scheduled tasks from $computer using schtasks.exe:`n$_"
                             Continue
                         }
@@ -652,19 +645,19 @@ function Get-ScheduledTasks {
                 }
 
                 #otherwise, use schtasks
-                else{
+                else {
                 
-                    Try{
+                    Try {
                         Get-SchTasks -computername $computer -folder $folder -CompatibilityMode -ErrorAction stop
                     }
-                     Catch{
+                    Catch {
                         Write-Error "Could not pull scheduled tasks from $computer using schtasks.exe:`n$_"
                         Continue
-                     }
+                    }
                 }
 
             }
-            Catch{
+            Catch {
                 Write-Error "Error pulling Scheduled tasks from $computer`: $_"
                 Continue
             }
@@ -717,155 +710,155 @@ function Get-UserSession {
         http://gallery.technet.microsoft.com/Get-UserSessions-Parse-b4c97837
     
     #> 
-        [cmdletbinding()]
-        Param(
-            [Parameter(
-                Position = 0,
-                ValueFromPipeline = $True)]
-            [string[]]$computername = "localhost",
+    [cmdletbinding()]
+    Param(
+        [Parameter(
+            Position = 0,
+            ValueFromPipeline = $True)]
+        [string[]]$computername = "localhost",
     
-            [switch]$parseIdleTime,
+        [switch]$parseIdleTime,
     
-            [validaterange(0,120)]$timeout = 15
-        )             
+        [validaterange(0, 120)]$timeout = 15
+    )             
     
-        ForEach($computer in $computername) {
+    ForEach ($computer in $computername) {
             
-            #start query.exe using .net and cmd /c.  We do this to avoid cases where query.exe hangs
+        #start query.exe using .net and cmd /c.  We do this to avoid cases where query.exe hangs
     
-                #build temp file to store results.  Loop until this works
-                    Do{
-                        $tempFile = [System.IO.Path]::GetTempFileName()
-                        start-sleep -Milliseconds 300
-                    }
-                    Until(test-path $tempfile)
-    
-                #Record date.  Start process to run query in cmd.  I use starttime independently of process starttime due to a few issues we ran into
-                    $startTime = Get-Date
-                    $p = Start-Process -FilePath C:\windows\system32\cmd.exe -ArgumentList "/c query user /server:$computer > $tempfile" -WindowStyle hidden -passthru
-    
-                #we can't read in info or else it will freeze.  We cant run waitforexit until we read the standard output, or we run into issues...
-                #handle timeouts on our own by watching hasexited
-                    $stopprocessing = $false
-                    do{
-                        
-                        #check if process has exited
-                        $hasExited = $p.HasExited
-                    
-                        #check if there is still a record of the process
-                        Try { $proc = get-process -id $p.id -ErrorAction stop }
-                        Catch { $proc = $null }
-    
-                        #sleep a bit
-                        start-sleep -seconds .5
-    
-                        #check if we have timed out, unless the process has exited
-                        if( ( (Get-Date) - $startTime ).totalseconds -gt $timeout -and -not $hasExited -and $proc){
-                            $p.kill()
-                            $stopprocessing = $true
-                            remove-item $tempfile -force
-                            Write-Error "$computer`: Query.exe took longer than $timeout seconds to execute"
-                        }
-                    }
-                    until($hasexited -or $stopProcessing -or -not $proc)
-                    if($stopprocessing){ Continue }
-    
-                    #if we are still processing, read the output!
-                    $sessions = get-content $tempfile
-                    remove-item $tempfile -force
-            
-            #handle no results
-            if($sessions){
-    
-                1..($sessions.count -1) | % {
-                
-                    #Start to build the custom object
-                    $temp = "" | Select ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
-                    $temp.ComputerName = $computer
-    
-                    #The output of query.exe is dynamic. 
-                    #strings should be 82 chars by default, but could reach higher depending on idle time.
-                    #we use arrays to handle the latter.
-    
-                    if($sessions[$_].length -gt 5){
-                        #if the length is normal, parse substrings
-                        if($sessions[$_].length -le 82){
-                               
-                            $temp.Username = $sessions[$_].Substring(1,22).trim()
-                            $temp.SessionName = $sessions[$_].Substring(23,19).trim()
-                            $temp.Id = $sessions[$_].Substring(42,4).trim()
-                            $temp.State = $sessions[$_].Substring(46,8).trim()
-                            $temp.IdleTime = $sessions[$_].Substring(54,11).trim()
-                            $logonTimeLength = $sessions[$_].length - 65
-                            try{
-                                $temp.LogonTime = get-date $sessions[$_].Substring(65,$logonTimeLength).trim()
-                            }
-                            catch{
-                                $temp.LogonTime = $sessions[$_].Substring(65,$logonTimeLength).trim() | out-null
-                            }
-    
-                        }
-                        #Otherwise, create array and parse
-                        else{                                       
-                            $array = $sessions[$_] -replace "\s+", " " -split " "
-                            $temp.Username = $array[1]
-                    
-                            #in some cases the array will be missing the session name.  array indices change
-                            if($array.count -lt 9){
-                                $temp.SessionName = ""
-                                $temp.Id = $array[2]
-                                $temp.State = $array[3]
-                                $temp.IdleTime = $array[4]
-                                $temp.LogonTime = get-date $($array[5] + " " + $array[6] + " " + $array[7])
-                            }
-                            else{
-                                $temp.SessionName = $array[2]
-                                $temp.Id = $array[3]
-                                $temp.State = $array[4]
-                                $temp.IdleTime = $array[5]
-                                $temp.LogonTime = get-date $($array[6] + " " + $array[7] + " " + $array[8])
-                            }
-                        }
-    
-                        #if specified, parse idle time to timespan
-                        if($parseIdleTime){
-                            $string = $temp.idletime
-                    
-                            #quick function to handle minutes or hours:minutes
-                            function convert-shortIdle {
-                                param($string)
-                                if($string -match "\:"){
-                                    [timespan]$string
-                                }
-                                else{
-                                    New-TimeSpan -minutes $string
-                                }
-                            }
-                    
-                            #to the left of + is days
-                            if($string -match "\+"){
-                                $days = new-timespan -days ($string -split "\+")[0]
-                                $hourMin = convert-shortIdle ($string -split "\+")[1]
-                                $temp.idletime = $days + $hourMin
-                            }
-                            #. means less than a minute
-                            elseif($string -like "." -or $string -like "none"){
-                                $temp.idletime = [timespan]"0:00"
-                            }
-                            #hours and minutes
-                            else{
-                                $temp.idletime = convert-shortIdle $string
-                            }
-                        }
-                    
-                        #Output the result
-                        $temp
-                    }
-                }
-            }            
-            else{ Write-warning "$computer`: No sessions found" }
+        #build temp file to store results.  Loop until this works
+        Do {
+            $tempFile = [System.IO.Path]::GetTempFileName()
+            start-sleep -Milliseconds 300
         }
+        Until(test-path $tempfile)
+    
+        #Record date.  Start process to run query in cmd.  I use starttime independently of process starttime due to a few issues we ran into
+        $startTime = Get-Date
+        $p = Start-Process -FilePath C:\windows\system32\cmd.exe -ArgumentList "/c query user /server:$computer > $tempfile" -WindowStyle hidden -passthru
+    
+        #we can't read in info or else it will freeze.  We cant run waitforexit until we read the standard output, or we run into issues...
+        #handle timeouts on our own by watching hasexited
+        $stopprocessing = $false
+        do {
+                        
+            #check if process has exited
+            $hasExited = $p.HasExited
+                    
+            #check if there is still a record of the process
+            Try { $proc = get-process -id $p.id -ErrorAction stop }
+            Catch { $proc = $null }
+    
+            #sleep a bit
+            start-sleep -seconds .5
+    
+            #check if we have timed out, unless the process has exited
+            if ( ( (Get-Date) - $startTime ).totalseconds -gt $timeout -and -not $hasExited -and $proc) {
+                $p.kill()
+                $stopprocessing = $true
+                remove-item $tempfile -force
+                Write-Error "$computer`: Query.exe took longer than $timeout seconds to execute"
+            }
+        }
+        until($hasexited -or $stopProcessing -or -not $proc)
+        if ($stopprocessing) { Continue }
+    
+        #if we are still processing, read the output!
+        $sessions = get-content $tempfile
+        remove-item $tempfile -force
+            
+        #handle no results
+        if ($sessions) {
+    
+            1..($sessions.count - 1) | % {
+                
+                #Start to build the custom object
+                $temp = "" | Select ComputerName, Username, SessionName, Id, State, IdleTime, LogonTime
+                $temp.ComputerName = $computer
+    
+                #The output of query.exe is dynamic. 
+                #strings should be 82 chars by default, but could reach higher depending on idle time.
+                #we use arrays to handle the latter.
+    
+                if ($sessions[$_].length -gt 5) {
+                    #if the length is normal, parse substrings
+                    if ($sessions[$_].length -le 82) {
+                               
+                        $temp.Username = $sessions[$_].Substring(1, 22).trim()
+                        $temp.SessionName = $sessions[$_].Substring(23, 19).trim()
+                        $temp.Id = $sessions[$_].Substring(42, 4).trim()
+                        $temp.State = $sessions[$_].Substring(46, 8).trim()
+                        $temp.IdleTime = $sessions[$_].Substring(54, 11).trim()
+                        $logonTimeLength = $sessions[$_].length - 65
+                        try {
+                            $temp.LogonTime = get-date $sessions[$_].Substring(65, $logonTimeLength).trim()
+                        }
+                        catch {
+                            $temp.LogonTime = $sessions[$_].Substring(65, $logonTimeLength).trim() | out-null
+                        }
+    
+                    }
+                    #Otherwise, create array and parse
+                    else {                                       
+                        $array = $sessions[$_] -replace "\s+", " " -split " "
+                        $temp.Username = $array[1]
+                    
+                        #in some cases the array will be missing the session name.  array indices change
+                        if ($array.count -lt 9) {
+                            $temp.SessionName = ""
+                            $temp.Id = $array[2]
+                            $temp.State = $array[3]
+                            $temp.IdleTime = $array[4]
+                            $temp.LogonTime = get-date $($array[5] + " " + $array[6] + " " + $array[7])
+                        }
+                        else {
+                            $temp.SessionName = $array[2]
+                            $temp.Id = $array[3]
+                            $temp.State = $array[4]
+                            $temp.IdleTime = $array[5]
+                            $temp.LogonTime = get-date $($array[6] + " " + $array[7] + " " + $array[8])
+                        }
+                    }
+    
+                    #if specified, parse idle time to timespan
+                    if ($parseIdleTime) {
+                        $string = $temp.idletime
+                    
+                        #quick function to handle minutes or hours:minutes
+                        function convert-shortIdle {
+                            param($string)
+                            if ($string -match "\:") {
+                                [timespan]$string
+                            }
+                            else {
+                                New-TimeSpan -minutes $string
+                            }
+                        }
+                    
+                        #to the left of + is days
+                        if ($string -match "\+") {
+                            $days = new-timespan -days ($string -split "\+")[0]
+                            $hourMin = convert-shortIdle ($string -split "\+")[1]
+                            $temp.idletime = $days + $hourMin
+                        }
+                        #. means less than a minute
+                        elseif ($string -like "." -or $string -like "none") {
+                            $temp.idletime = [timespan]"0:00"
+                        }
+                        #hours and minutes
+                        else {
+                            $temp.idletime = convert-shortIdle $string
+                        }
+                    }
+                    
+                    #Output the result
+                    $temp
+                }
+            }
+        }            
+        else { Write-warning "$computer`: No sessions found" }
     }
+}
 
 
 #Author: Warren Frame
@@ -1038,7 +1031,7 @@ Function New-DynamicParam {
         $Mandatory,
         
         [string]
-        $ParameterSetName="__AllParameterSets",
+        $ParameterSetName = "__AllParameterSets",
         
         [int]
         $Position,
@@ -1050,67 +1043,59 @@ Function New-DynamicParam {
         $HelpMessage,
     
         [validatescript({
-            if(-not ( $_ -is [System.Management.Automation.RuntimeDefinedParameterDictionary] -or -not $_) )
-            {
-                Throw "DPDictionary must be a System.Management.Automation.RuntimeDefinedParameterDictionary object, or not exist"
-            }
-            $True
-        })]
+                if (-not ( $_ -is [System.Management.Automation.RuntimeDefinedParameterDictionary] -or -not $_) ) {
+                    Throw "DPDictionary must be a System.Management.Automation.RuntimeDefinedParameterDictionary object, or not exist"
+                }
+                $True
+            })]
         $DPDictionary = $false
      
     )
-        #Create attribute object, add attributes, add to collection   
-            $ParamAttr = New-Object System.Management.Automation.ParameterAttribute
-            $ParamAttr.ParameterSetName = $ParameterSetName
-            if($mandatory)
-            {
-                $ParamAttr.Mandatory = $True
-            }
-            if($Position -ne $null)
-            {
-                $ParamAttr.Position=$Position
-            }
-            if($ValueFromPipelineByPropertyName)
-            {
-                $ParamAttr.ValueFromPipelineByPropertyName = $True
-            }
-            if($HelpMessage)
-            {
-                $ParamAttr.HelpMessage = $HelpMessage
-            }
-     
-            $AttributeCollection = New-Object 'Collections.ObjectModel.Collection[System.Attribute]'
-            $AttributeCollection.Add($ParamAttr)
-        
-        #param validation set if specified
-            if($ValidateSet)
-            {
-                $ParamOptions = New-Object System.Management.Automation.ValidateSetAttribute -ArgumentList $ValidateSet
-                $AttributeCollection.Add($ParamOptions)
-            }
-    
-        #Aliases if specified
-            if($Alias.count -gt 0) {
-                $ParamAlias = New-Object System.Management.Automation.AliasAttribute -ArgumentList $Alias
-                $AttributeCollection.Add($ParamAlias)
-            }
-    
-     
-        #Create the dynamic parameter
-            $Parameter = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter -ArgumentList @($Name, $Type, $AttributeCollection)
-        
-        #Add the dynamic parameter to an existing dynamic parameter dictionary, or create the dictionary and add it
-            if($DPDictionary)
-            {
-                $DPDictionary.Add($Name, $Parameter)
-            }
-            else
-            {
-                $Dictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-                $Dictionary.Add($Name, $Parameter)
-                $Dictionary
-            }
+    #Create attribute object, add attributes, add to collection   
+    $ParamAttr = New-Object System.Management.Automation.ParameterAttribute
+    $ParamAttr.ParameterSetName = $ParameterSetName
+    if ($mandatory) {
+        $ParamAttr.Mandatory = $True
     }
+    if ($Position -ne $null) {
+        $ParamAttr.Position = $Position
+    }
+    if ($ValueFromPipelineByPropertyName) {
+        $ParamAttr.ValueFromPipelineByPropertyName = $True
+    }
+    if ($HelpMessage) {
+        $ParamAttr.HelpMessage = $HelpMessage
+    }
+     
+    $AttributeCollection = New-Object 'Collections.ObjectModel.Collection[System.Attribute]'
+    $AttributeCollection.Add($ParamAttr)
+        
+    #param validation set if specified
+    if ($ValidateSet) {
+        $ParamOptions = New-Object System.Management.Automation.ValidateSetAttribute -ArgumentList $ValidateSet
+        $AttributeCollection.Add($ParamOptions)
+    }
+    
+    #Aliases if specified
+    if ($Alias.count -gt 0) {
+        $ParamAlias = New-Object System.Management.Automation.AliasAttribute -ArgumentList $Alias
+        $AttributeCollection.Add($ParamAlias)
+    }
+    
+     
+    #Create the dynamic parameter
+    $Parameter = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter -ArgumentList @($Name, $Type, $AttributeCollection)
+        
+    #Add the dynamic parameter to an existing dynamic parameter dictionary, or create the dictionary and add it
+    if ($DPDictionary) {
+        $DPDictionary.Add($Name, $Parameter)
+    }
+    else {
+        $Dictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+        $Dictionary.Add($Name, $Parameter)
+        $Dictionary
+    }
+}
 
 #Author: Warren Frame
 #Link: https://github.com/RamblingCookieMonster/PowerShell/blob/master/ConvertTo-FlatObject.ps1
@@ -1285,7 +1270,7 @@ Function ConvertTo-FlatObject {
     param(
 
         [parameter( Mandatory = $True,
-                    ValueFromPipeline = $True)]
+            ValueFromPipeline = $True)]
         [PSObject[]]$InputObject,
 
         [string[]]$Exclude = "",
@@ -1298,212 +1283,186 @@ Function ConvertTo-FlatObject {
 
         [int]$MaxDepth = 10
     )
-    Begin
-    {
+    Begin {
         #region FUNCTIONS
 
-            #Before adding a property, verify that it matches a Like comparison to strings in $Include...
-            Function IsIn-Include {
-                param($prop)
-                if(-not $Include) {$True}
-                else {
-                    foreach($Inc in $Include)
-                    {
-                        if($Prop -like $Inc)
-                        {
-                            $True
-                        }
+        #Before adding a property, verify that it matches a Like comparison to strings in $Include...
+        Function IsIn-Include {
+            param($prop)
+            if (-not $Include) { $True }
+            else {
+                foreach ($Inc in $Include) {
+                    if ($Prop -like $Inc) {
+                        $True
                     }
                 }
             }
+        }
 
-            #Before adding a value, verify that it matches a Like comparison to strings in $Value...
-            Function IsIn-Value {
-                param($val)
-                if(-not $Value) {$True}
-                else {
-                    foreach($string in $Value)
-                    {
-                        if($val -like $string)
-                        {
-                            $True
-                        }
+        #Before adding a value, verify that it matches a Like comparison to strings in $Value...
+        Function IsIn-Value {
+            param($val)
+            if (-not $Value) { $True }
+            else {
+                foreach ($string in $Value) {
+                    if ($val -like $string) {
+                        $True
                     }
                 }
             }
+        }
 
-            Function Get-Exclude {
-                [cmdletbinding()]
-                param($obj)
+        Function Get-Exclude {
+            [cmdletbinding()]
+            param($obj)
 
-                #Exclude default props if specified, and anything the user specified.  Thanks to Jaykul for the hint on [type]!
-                    if($ExcludeDefault)
-                    {
-                        Try
-                        {
-                            $DefaultTypeProps = @( $obj.gettype().GetProperties() | Select -ExpandProperty Name -ErrorAction Stop )
-                            if($DefaultTypeProps.count -gt 0)
-                            {
-                                Write-Verbose "Excluding default properties for $($obj.gettype().Fullname):`n$($DefaultTypeProps | Out-String)"
-                            }
-                        }
-                        Catch
-                        {
-                            Write-Verbose "Failed to extract properties from $($obj.gettype().Fullname): $_"
-                            $DefaultTypeProps = @()
-                        }
+            #Exclude default props if specified, and anything the user specified.  Thanks to Jaykul for the hint on [type]!
+            if ($ExcludeDefault) {
+                Try {
+                    $DefaultTypeProps = @( $obj.gettype().GetProperties() | Select -ExpandProperty Name -ErrorAction Stop )
+                    if ($DefaultTypeProps.count -gt 0) {
+                        Write-Verbose "Excluding default properties for $($obj.gettype().Fullname):`n$($DefaultTypeProps | Out-String)"
                     }
-
-                    @( $Exclude + $DefaultTypeProps ) | Select -Unique
+                }
+                Catch {
+                    Write-Verbose "Failed to extract properties from $($obj.gettype().Fullname): $_"
+                    $DefaultTypeProps = @()
+                }
             }
 
-            #Function to recurse the Object, add properties to object
-            Function Recurse-Object {
-                [cmdletbinding()]
-                param(
-                    $Object,
-                    [string[]]$path = '$Object',
-                    [psobject]$Output,
-                    $depth = 0
-                )
+            @( $Exclude + $DefaultTypeProps ) | Select -Unique
+        }
 
-                # Handle initial call
-                    Write-Verbose "Working in path $Path at depth $depth"
-                    Write-Debug "Recurse Object called with PSBoundParameters:`n$($PSBoundParameters | Out-String)"
-                    $Depth++
+        #Function to recurse the Object, add properties to object
+        Function Recurse-Object {
+            [cmdletbinding()]
+            param(
+                $Object,
+                [string[]]$path = '$Object',
+                [psobject]$Output,
+                $depth = 0
+            )
+
+            # Handle initial call
+            Write-Verbose "Working in path $Path at depth $depth"
+            Write-Debug "Recurse Object called with PSBoundParameters:`n$($PSBoundParameters | Out-String)"
+            $Depth++
+
+            #Exclude default props if specified, and anything the user specified.
+            $ExcludeProps = @( Get-Exclude $object )
+
+            #Get the children we care about, and their names
+            $Children = $object.psobject.properties | Where { $ExcludeProps -notcontains $_.Name }
+            Write-Debug "Working on properties:`n$($Children | select -ExpandProperty Name | Out-String)"
+
+            #Loop through the children properties.
+            foreach ($Child in @($Children)) {
+                $ChildName = $Child.Name
+                $ChildValue = $Child.Value
+
+                Write-Debug "Working on property $ChildName with value $($ChildValue | Out-String)"
+                # Handle special characters...
+                if ($ChildName -match '[^a-zA-Z0-9_]') {
+                    $FriendlyChildName = "'$ChildName'"
+                }
+                else {
+                    $FriendlyChildName = $ChildName
+                }
+
+                #Add the property.
+                if ((IsIn-Include $ChildName) -and (IsIn-Value $ChildValue) -and $Depth -le $MaxDepth) {
+                    $ThisPath = @( $Path + $FriendlyChildName ) -join "."
+                    $Output | Add-Member -MemberType NoteProperty -Name $ThisPath -Value $ChildValue
+                    Write-Verbose "Adding member '$ThisPath'"
+                }
+
+                #Handle null...
+                if ($ChildValue -eq $null) {
+                    Write-Verbose "Skipping NULL $ChildName"
+                    continue
+                }
+
+                #Handle evil looping.  Will likely need to expand this.  Any thoughts on a better approach?
+                if (
+                    (
+                        $ChildValue.GetType() -eq $Object.GetType() -and
+                        $ChildValue -is [datetime]
+                    ) -or
+                    (
+                        $ChildName -eq "SyncRoot" -and
+                        -not $ChildValue
+                    )
+                ) {
+                    Write-Verbose "Skipping $ChildName with type $($ChildValue.GetType().fullname)"
+                    continue
+                }
+
+                #Check for arrays by checking object type (this is a fix for arrays with 1 object) otherwise check the count of objects
+                if (($ChildValue.GetType()).basetype.Name -eq "Array") {
+                    $IsArray = $true
+                }
+                else {
+                    $IsArray = @($ChildValue).count -gt 1
+                }
+
+                $count = 0
+
+                #Set up the path to this node and the data...
+                $CurrentPath = @( $Path + $FriendlyChildName ) -join "."
 
                 #Exclude default props if specified, and anything the user specified.
-                    $ExcludeProps = @( Get-Exclude $object )
+                $ExcludeProps = @( Get-Exclude $ChildValue )
 
-                #Get the children we care about, and their names
-                    $Children = $object.psobject.properties | Where {$ExcludeProps -notcontains $_.Name }
-                    Write-Debug "Working on properties:`n$($Children | select -ExpandProperty Name | Out-String)"
+                #Get the children's children we care about, and their names.  Also look for signs of a hashtable like type
+                $ChildrensChildren = $ChildValue.psobject.properties | Where { $ExcludeProps -notcontains $_.Name }
+                $HashKeys = if ($ChildValue.Keys -notlike $null -and $ChildValue.Values) {
+                    $ChildValue.Keys
+                }
+                else {
+                    $null
+                }
+                Write-Debug "Found children's children $($ChildrensChildren | select -ExpandProperty Name | Out-String)"
 
-                #Loop through the children properties.
-                foreach($Child in @($Children))
-                {
-                    $ChildName = $Child.Name
-                    $ChildValue = $Child.Value
-
-                    Write-Debug "Working on property $ChildName with value $($ChildValue | Out-String)"
-                    # Handle special characters...
-                        if($ChildName -match '[^a-zA-Z0-9_]')
-                        {
-                            $FriendlyChildName = "'$ChildName'"
-                        }
-                        else
-                        {
-                            $FriendlyChildName = $ChildName
-                        }
-
-                    #Add the property.
-                        if((IsIn-Include $ChildName) -and (IsIn-Value $ChildValue) -and $Depth -le $MaxDepth)
-                        {
-                            $ThisPath = @( $Path + $FriendlyChildName ) -join "."
-                            $Output | Add-Member -MemberType NoteProperty -Name $ThisPath -Value $ChildValue
-                            Write-Verbose "Adding member '$ThisPath'"
-                        }
-
-                    #Handle null...
-                        if($ChildValue -eq $null)
-                        {
-                            Write-Verbose "Skipping NULL $ChildName"
-                            continue
-                        }
-
-                    #Handle evil looping.  Will likely need to expand this.  Any thoughts on a better approach?
-                        if(
-                            (
-                                $ChildValue.GetType() -eq $Object.GetType() -and
-                                $ChildValue -is [datetime]
-                            ) -or
-                            (
-                                $ChildName -eq "SyncRoot" -and
-                                -not $ChildValue
-                            )
-                        )
-                        {
-                            Write-Verbose "Skipping $ChildName with type $($ChildValue.GetType().fullname)"
-                            continue
-                        }
-
-                     #Check for arrays by checking object type (this is a fix for arrays with 1 object) otherwise check the count of objects
-                        if (($ChildValue.GetType()).basetype.Name -eq "Array") {
-                            $IsArray = $true
-                        }
-                        else {
-                            $IsArray = @($ChildValue).count -gt 1
-                        }
-
-                        $count = 0
-
-                    #Set up the path to this node and the data...
-                        $CurrentPath = @( $Path + $FriendlyChildName ) -join "."
-
-                    #Exclude default props if specified, and anything the user specified.
-                        $ExcludeProps = @( Get-Exclude $ChildValue )
-
-                    #Get the children's children we care about, and their names.  Also look for signs of a hashtable like type
-                        $ChildrensChildren = $ChildValue.psobject.properties | Where {$ExcludeProps -notcontains $_.Name }
-                        $HashKeys = if($ChildValue.Keys -notlike $null -and $ChildValue.Values)
-                        {
-                            $ChildValue.Keys
-                        }
-                        else
-                        {
-                            $null
-                        }
-                        Write-Debug "Found children's children $($ChildrensChildren | select -ExpandProperty Name | Out-String)"
-
-                    #If we aren't at max depth or a leaf...
-                    if(
+                #If we aren't at max depth or a leaf...
+                if (
                         (@($ChildrensChildren).count -ne 0 -or $HashKeys) -and
-                        $Depth -lt $MaxDepth
-                    )
-                    {
-                        #This handles hashtables.  But it won't recurse...
-                            if($HashKeys)
-                            {
-                                Write-Verbose "Working on hashtable $CurrentPath"
-                                foreach($key in $HashKeys)
-                                {
-                                    Write-Verbose "Adding value from hashtable $CurrentPath['$key']"
-                                    $Output | Add-Member -MemberType NoteProperty -name "$CurrentPath['$key']" -value $ChildValue["$key"]
-                                    $Output = Recurse-Object -Object $ChildValue["$key"] -Path "$CurrentPath['$key']" -Output $Output -depth $depth
-                                }
-                            }
-                        #Sub children?  Recurse!
-                            else
-                            {
-                                if($IsArray)
-                                {
-                                    foreach($item in @($ChildValue))
-                                    {
-                                        Write-Verbose "Recursing through array node '$CurrentPath'"
-                                        $Output = Recurse-Object -Object $item -Path "$CurrentPath[$count]" -Output $Output -depth $depth
-                                        $Count++
-                                    }
-                                }
-                                else
-                                {
-                                    Write-Verbose "Recursing through node '$CurrentPath'"
-                                    $Output = Recurse-Object -Object $ChildValue -Path $CurrentPath -Output $Output -depth $depth
-                                }
-                            }
+                    $Depth -lt $MaxDepth
+                ) {
+                    #This handles hashtables.  But it won't recurse...
+                    if ($HashKeys) {
+                        Write-Verbose "Working on hashtable $CurrentPath"
+                        foreach ($key in $HashKeys) {
+                            Write-Verbose "Adding value from hashtable $CurrentPath['$key']"
+                            $Output | Add-Member -MemberType NoteProperty -name "$CurrentPath['$key']" -value $ChildValue["$key"]
+                            $Output = Recurse-Object -Object $ChildValue["$key"] -Path "$CurrentPath['$key']" -Output $Output -depth $depth
                         }
                     }
-
-                $Output
+                    #Sub children?  Recurse!
+                    else {
+                        if ($IsArray) {
+                            foreach ($item in @($ChildValue)) {
+                                Write-Verbose "Recursing through array node '$CurrentPath'"
+                                $Output = Recurse-Object -Object $item -Path "$CurrentPath[$count]" -Output $Output -depth $depth
+                                $Count++
+                            }
+                        }
+                        else {
+                            Write-Verbose "Recursing through node '$CurrentPath'"
+                            $Output = Recurse-Object -Object $ChildValue -Path $CurrentPath -Output $Output -depth $depth
+                        }
+                    }
+                }
             }
+
+            $Output
+        }
 
         #endregion FUNCTIONS
     }
-    Process
-    {
-        Foreach($Object in $InputObject)
-        {
+    Process {
+        Foreach ($Object in $InputObject) {
             #Flatten the XML and write it to the pipeline
-                Recurse-Object -Object $Object -Output $( New-Object -TypeName PSObject )
+            Recurse-Object -Object $Object -Output $( New-Object -TypeName PSObject )
         }
     }
 }
@@ -1519,9 +1478,245 @@ function Get-GoogleAnswer {
     Start-Process "https://www.google.com/search?q=$mensagemErro"
 }
 
+#Author:
+#URL
+
+function ConvertTo-MorseCode {
+    <#
+.SYNOPSIS
+	Writes text in Morse code
+.DESCRIPTION
+	This PowerShell script writes text in Morse code.
+.PARAMETER text
+	Specifies the text to write
+.PARAMETER speed
+	Specifies the speed of one time unit (100 ms per default)
+.EXAMPLE
+	PS> ./write-morse-code "Hello World"
+.NOTES
+	Author: Markus Fleschutz / License: CC0
+.LINK
+	https://github.com/fleschutz/PowerShell
+#>
+
+    param([string]$text = "", [int]$speed = 10) # one time unit in milliseconds
+
+    function gap {
+        param([int]$Length)
+        for ([int]$i = 1; $i -lt $Length; $i++) {
+            write-host " " -nonewline
+        }
+        start-sleep -milliseconds ($Length * $speed)
+    }
+
+    function dot {
+        write-host "." -nonewline
+        start-sleep -milliseconds $speed # signal
+    }
+
+    function dash {
+        write-host "_" -nonewline
+        start-sleep -milliseconds (3 * $speed) # signal
+    }
+
+    function Char2MorseCode {
+        param([string]$Char)
+        switch ($Char) {
+            'A' { dot; gap 1; dash; gap 3 }
+            'B' { dash; gap 1; dot; gap 1; dot; gap 1; dot; gap 3 }
+            'C' { dash; gap 1; dot; gap 1; dash; gap 1; dot; gap 3 }
+            'D' { dash; gap 1; dot; gap 1; dot; gap 3 }
+            'E' { dot; gap 3 }
+            'F' { dot; gap 1; dot; gap 1; dash; gap 1; dot; gap 3 }
+            'G' { dash; gap 1; dash; gap 1; dot; gap 3 }
+            'H' { dot; gap 1; dot; gap 1; dot; gap 1; dot; gap 3 }
+            'I' { dot; gap 1; dot; gap 3 }
+            'J' { dot; gap 1; dash; gap 1; dash; gap 1; dash; gap 3 }
+            'K' { dash; gap 1; dot; gap 1; dash; gap 3 }
+            'L' { dot; gap 1; dash; gap 1; dot; gap 1; dot; gap 3 }
+            'M' { dash; gap 1; dash; gap 3 }
+            'N' { dash; gap 1; dot; gap 3 }
+            'O' { dash; gap 1; dash; gap 1; dash; gap 3 }
+            'P' { dot; gap 1; dash; gap 1; dash; gap 1; dot; gap 3 }
+            'Q' { dash; gap 1; dash; gap 1; dot; gap 1; dash; gap 3 }
+            'R' { dot; gap 1; dash; gap 1; dot; gap 3 }
+            'S' { dot; gap 1; dot; gap 1; dot; gap 3 }
+            'T' { dash; gap 3 }
+            'U' { dot; gap 1; dot; gap 1; dash; gap 3 }
+            'V' { dot; gap 1; dot; gap 1; dot; gap 1; dash; gap 3 }
+            'W' { dot; gap 1; dash; gap 1; dash; gap 3 }
+            'X' { dash; gap 1; dot; gap 1; dot; gap 1; dash; gap 3 }
+            'Y' { dash; gap 1; dot; gap 1; dash; gap 1; dash; gap 3 }
+            'Z' { dash; gap 1; dash; gap 1; dot; gap 1; dot; gap 3 }
+            '1' { dot; gap 1; dash; gap 1; dash; gap 1; dash; gap 1; dash; gap 3 }
+            '2' { dot; gap 1; dot; gap 1; dash; gap 1; dash; gap 1; dash; gap 3 }
+            '3' { dot; gap 1; dot; gap 1; dot; gap 1; dash; gap 1; dash; gap 3 }
+            '4' { dot; gap 1; dot; gap 1; dot; gap 1; dot; gap 1; dash; gap 3 }
+            '5' { dot; gap 1; dot; gap 1; dot; gap 1; dot; gap 1; dot; gap 3 }
+            '6' { dash; gap 1; dot; gap 1; dot; gap 1; dot; gap 1; dot; gap 3 }
+            '7' { dash; gap 1; dash; gap 1; dot; gap 1; dot; gap 1; dot; gap 3 }
+            '8' { dash; gap 1; dash; gap 1; dash; gap 1; dot; gap 1; dot; gap 3 }
+            '9' { dash; gap 1; dash; gap 1; dash; gap 1; dash; gap 1; dot; gap 3 }
+            '0' { dash; gap 1; dash; gap 1; dash; gap 1; dash; gap 1; dash; gap 3 }
+            default { gap 7 } # medium gap (between words)
+        }
+    }
+
+    try {
+        if ($text -eq "" ) { [string]$text = read-host "Enter text to write" }
+
+        [char[]]$ArrayOfChars = $text.ToUpper()
+        foreach ($Char in $ArrayOfChars) {
+            Char2MorseCode $Char 
+        }
+        # exit 0 # success
+    }
+    catch {
+        "Error in line $($_.InvocationInfo.ScriptLineNumber): $($Error[0])"
+        # exit 1
+    }
+}
 
 
 
+Function ConvertFrom-PS2MD {
+    <#
+.SYNOPSIS
+	Converts the comment-based help of a PowerShell script to Markdown
+.DESCRIPTION
+	This PowerShell script converts the comment-based help of a PowerShell script to Markdown.
+.PARAMETER filename
+	Specifies the path to the PowerShell script
+.EXAMPLE
+	PS> ./convert-ps2md myscript.ps1
+.LINK
+	https://github.com/fleschutz/PowerShell
+.NOTES
+	Author: Markus Fleschutz / License: CC0
+#>
 
+    param([string]$filename = "")
 
+    function EncodePartOfHtml {
+        param([string]$Value)
+    ($Value -replace '<', '&lt;') -replace '>', '&gt;'
+    }
+
+    function GetCode {
+        param($Example)
+        $codeAndRemarks = (($Example | Out-String) -replace ($Example.title), '').Trim() -split "`r`n"
+
+        $code = New-Object "System.Collections.Generic.List[string]"
+        for ($i = 0; $i -lt $codeAndRemarks.Length; $i++) {
+            if ($codeAndRemarks[$i] -eq 'DESCRIPTION' -and $codeAndRemarks[$i + 1] -eq '-----------') { break }
+            if ($codeAndRemarks[$i] -eq '' -and $codeAndRemarks[$i + 1] -eq '') { continue }
+            if (1 -le $i -and $i -le 2) { continue }
+            $codeAndRemarks[$i] = ($codeAndRemarks[$i] | Out-String) -replace "PS>", "PS> "
+            $code.Add($codeAndRemarks[$i])
+        }
+
+        $code -join "`r`n"
+    }
+
+    function GetRemark {
+        param($Example)
+        $codeAndRemarks = (($Example | Out-String) -replace ($Example.title), '').Trim() -split "`r`n"
+
+        $isSkipped = $false
+        $remark = New-Object "System.Collections.Generic.List[string]"
+        for ($i = 0; $i -lt $codeAndRemarks.Length; $i++) {
+            if (!$isSkipped -and $codeAndRemarks[$i - 2] -ne 'DESCRIPTION' -and $codeAndRemarks[$i - 1] -ne '-----------') {
+                continue
+            }
+            $isSkipped = $true
+            $remark.Add($codeAndRemarks[$i])
+        }
+
+        $remark -join "`r`n"
+    }
+
+    try {
+        if ($filename -eq "") { $filename = read-host "Enter path to PowerShell script" }
+        $ScriptName = (get-item "$filename").Name
+
+        $full = Get-Help $filename -Full 
+
+        "## $ScriptName - $($full.Synopsis)"
+
+        $Description = ($full.description | Out-String).Trim()
+        if ($Description -ne "") {
+            ""
+            "$Description"
+        }
+
+        ""
+        "## Parameters"
+        "``````powershell"
+        $Syntax = (($full.syntax | Out-String) -replace "`r`n", "`r`n").Trim()
+        $Syntax = (($Syntax | Out-String) -replace "/home/mf/PowerShell/Scripts/", "")
+        if ($Syntax -ne "") {
+            "$Syntax"
+        }
+
+        foreach ($parameter in $full.parameters.parameter) {
+            "$(((($parameter | Out-String).Trim() -split "`r`n")[-5..-1] | % { $_.Trim() }) -join "`r`n")"
+            ""
+        }
+        "[<CommonParameters>]"
+        "    This script supports the common parameters: Verbose, Debug, ErrorAction, ErrorVariable, WarningAction, "
+        "    WarningVariable, OutBuffer, PipelineVariable, and OutVariable."
+        "``````"
+
+        foreach ($input in $full.inputTypes.inputType) {
+            ""
+            "## Inputs"
+            "$($input.type.name)"
+        }
+
+        foreach ($output in $full.outputTypes.outputType) {
+            ""
+            "## Outputs"
+            "$($output.type.name)"
+        }
+
+        foreach ($example in $full.examples.example) {
+            ""
+            "## Example"
+            "``````powershell"
+            "$(GetCode $example)"
+            "``````"
+        }
+
+        $Notes = ($full.alertSet.alert | Out-String).Trim()
+        if ($Notes -ne "") {
+            ""
+            "## Notes"
+            "$Notes"
+        }
+
+        $Links = ($full.relatedlinks | Out-String).Trim()
+        if ($Links -ne "") {
+            ""
+            "## Related Links"
+            "$Links"
+        }
+
+        ""
+        "*Generated by convert-ps2md.ps1 using the comment-based help of $ScriptName*"
+    }
+    catch {
+        "⚠️ Error in line $($_.InvocationInfo.ScriptLineNumber): $($Error[0])"
+        # exit 1
+    }
+}
+
+Function Read-NetworkSpeed {
+    # $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter DeviceID=7 -ComputerName pc-kharper
+    $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter DeviceID=2
+
+    if ($adapter.Speed -ne 1000000000) {
+        Notify "Network Adapter" "Network Adapter is not at 1 Gbps.`nCurrent speed is $($adapter.Speed / 1000000)Mbps"
+        # Send-MailMessage -To kharper@annaly.com,vherrera@annaly.com -From kharper@annaly.com -SmtpServer nyprodmx01 -Subject "Network Adapter is not at 1 Gbps" -Body ("Current speed is " + ($adapter.Speed / 1000000) + "Mbps")
+    }
+}
 Export-ModuleMember -Function '*'

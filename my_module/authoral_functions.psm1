@@ -42,7 +42,8 @@ function Notify {
     # $Result = [System.Windows.MessageBox]::Show($msgBody,$msgTitle,$msgButton,$msgImage)
     # Write-Host "The user chose: $Result [" ($result).value__ "]"
     if (!$Quiet) {
-        [console]::beep(440, 1000)
+        # [console]::beep(440, 1000)
+        (New-Object System.Media.SoundPlayer "C:\Windows\Media\chimes.wav").Play()
     }
     $Result = [System.Windows.MessageBox]::Show($Message, $Title, 0, 0)
 }
@@ -223,30 +224,30 @@ Function Discord {
 Export-ModuleMember -Function Discord
 
 # function hasPdaLib{
-    #     $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
-    #     $dependencies = $($pkg.Dependencies | Select-String "pdasolutions")
+#     $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
+#     $dependencies = $($pkg.Dependencies | Select-String "pdasolutions")
         
-    #     if($dependencies){
-    #         return $True
-    #     } else {
-    #         return $False
-    #     }
-    # }
-    # function UpdatePDAlib{
-    #     yarn remove @pdasolutions/web
-    #     yarn add @pdasolucoes/web
+#     if($dependencies){
+#         return $True
+#     } else {
+#         return $False
+#     }
+# }
+# function UpdatePDAlib{
+#     yarn remove @pdasolutions/web
+#     yarn add @pdasolucoes/web
         
-    #     $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
-    #     $scripts = $pkg.scripts.updateLib
-    #     $scripts
-    #     if($scripts){
-    #         $content = $(get-Content -Path .\package.json).Replace("pdasolutions","pdasolucoes")
-    #         Remove-Item .\package.json -Force
-    #         New-Item -Type File -Name package.json -Value $content.ToString()
-    #     } else {
-    #         return $False
-    # }
-    # }
+#     $pkg = $(get-Content -Path .\package.json | ConvertFrom-Json)
+#     $scripts = $pkg.scripts.updateLib
+#     $scripts
+#     if($scripts){
+#         $content = $(get-Content -Path .\package.json).Replace("pdasolutions","pdasolucoes")
+#         Remove-Item .\package.json -Force
+#         New-Item -Type File -Name package.json -Value $content.ToString()
+#     } else {
+#         return $False
+# }
+# }
     
 
 function Update-Repos {
@@ -271,7 +272,7 @@ function Update-Repos {
                         git commit -m '[skip ci] Automatic repositories update'
                     }
                     git checkout $branch
-                    $branch = $_.ToString().Replace(' ','')
+                    $branch = $_.ToString().Replace(' ', '')
                     if ($branch -match '\*') {
                         $branch = $branch.split(" ")[1]
                         $currentBranch = $branch
