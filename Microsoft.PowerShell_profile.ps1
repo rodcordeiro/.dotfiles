@@ -9,20 +9,9 @@ Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-L
 Import-Module PSSQLite # https://github.com/RamblingCookieMonster/PSSQLite
 Import-Module SecurityFever
 Import-Module ProfileFever
+Import-Module WindowsConsoleFonts
 
 Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"
-
-## Needed modules
-# Microsoft.PowerShell.Management
-# Microsoft.PowerShell.Security
-# Microsoft.PowerShell.Utility
-# MyModule
-# PackageManagement
-# PowerShellGet
-# PSReadline
-# psscriptanalyzer
-# Terminal-Icons
-# WindowsConsoleFonts
 
 
 # Set terminal configs
@@ -31,14 +20,14 @@ Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
 Set-LoggingDefaultLevel -Level 'WARNING'
 Add-LoggingTarget -Name Console
 Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log'; Level = 'WARNING' }
+Set-PSReadlineKeyHandler -Key Tab -Function Complete
+Set-PSReadlineOption -ShowToolTips
 
 # Clears terminal before starting
-# Clear-Host
+Clear-Host
 
 # Readline options
 ## Tab completion
-Set-PSReadlineKeyHandler -Key Tab -Function Complete
-Set-PSReadlineOption -ShowToolTips
 
 $Glyphs = [PSCustomObject]@{
   Branch  = "$([char]0xE0A0)" #  Version control branch
@@ -192,9 +181,35 @@ Set-Alias 'Check-Network' Read-NetworkSpeed
 ## PERSONAL_VARIABLES
 $env:PAT = ""
 $env:GOOGLE_TOKEN = ""
-$env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
+$env:disc_darthside = ""
 $env:disc_testes = ""
 $env:PSGToken = "" 
+
+$env:ANDROID_HOME = 'C:\Android\Sdk'
+$env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
+
+
+# https://en.wikipedia.org/wiki/ANSI_escape_code
+# https://superuser.com/questions/1259900/how-to-colorize-the-powershell-prompt
+
+# https://stackoverflow.com/questions/56216923/change-powershell-command-color
+# Get-PSReadlineOption
+# CommandColor                           : "$([char]0x1b)[93m"
+# CommentColor                           : "$([char]0x1b)[32m"
+# ContinuationPromptColor                : "$([char]0x1b)[96m"
+# DefaultTokenColor                      : "$([char]0x1b)[96m"
+# EmphasisColor                          : "$([char]0x1b)[96m"
+# ErrorColor                             : "$([char]0x1b)[91m"
+# KeywordColor                           : "$([char]0x1b)[92m"
+# MemberColor                            : "$([char]0x1b)[97m"
+# NumberColor                            : "$([char]0x1b)[97m"
+# OperatorColor                          : "$([char]0x1b)[90m"
+# ParameterColor                         : "$([char]0x1b)[90m"
+# SelectionColor                         : "$([char]0x1b)[30;106m"
+# StringColor                            : "$([char]0x1b)[36m"
+# TypeColor                              : "$([char]0x1b)[37m"
+# VariableColor                          : "$([char]0x1b)[92m"
+
 
 # Import the Chocolatey Profile that contains the necessary code to enable
 # tab-completions to function for `choco`.

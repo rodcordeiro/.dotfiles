@@ -1,36 +1,56 @@
 [includeIf "gitdir:~/projetos/personal/"]
   path = .gitconfig-rod
-[includeIf "gitdir:~/projetos/PDA/"]
+[includeIf "gitdir:~/projetos/estudos/"]
+  path = .gitconfig-rod
+[includeIf "gitdir:~/projetos/pda/"]
   path = .gitconfig-pda
+
 [alias]
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
-	l = log --pretty=oneline -n 20 --graph --abbrev-commit
-	graph = log --graph --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
+	l = log --pretty=oneline --decorate=auto -n 20 --graph --abbrev-commit
+	graph = log --graph  --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
+	last = log --name-status --diff-filter="ACDMRT" -1 -U
+	json = log --pretty=format:'{%n  \"commit\": \"%H\",%n  \"abbreviated_commit\": \"%h\",%n  \"tree\": \"%T\",%n  \"abbreviated_tree\": \"%t\",%n  \"parent\": \"%P\",%n  \"abbreviated_parent\": \"%p\",%n  \"refs\": \"%D\",%n  \"encoding\": \"%e\",%n  \"subject\": \"%s\",%n  \"sanitized_subject_line\": \"%f\",%n  \"body\": \"%b\",%n  \"commit_notes\": \"%N\",%n  \"verification_flag\": \"%G?\",%n  \"signer\": \"%GS\",%n  \"signer_key\": \"%GK\",%n  \"author\": {%n    \"name\": \"%aN\",%n    \"email\": \"%aE\",%n    \"date\": \"%aD\"%n  },%n  \"commiter\": {%n    \"name\": \"%cN\",%n    \"email\": \"%cE\",%n    \"date\": \"%cD\"%n  }%n},'
+
+	# Search for commits containing or related to given card number. Example:
+	# PS> git card 1818
+	card = log --all-match -i --full-history --all --oneline --grep
+	
+	# Git flow management
+	feat = log --all-match -i --full-history --all --oneline --grep feat
+	fix = log --all-match -i --full-history --all --oneline --grep fix
+	chore = log --all-match -i --full-history --all --oneline --grep chore
+	merged = log --all-match -i --full-history --all --oneline --grep merged
+	
 
 	# Show verbose output about tags, branches or remotes
 	tags = tag -l
 	branches = branch --all
-	remotes = remote --verbose
-
+	remotes = remote --verbose 
+	
 	# List contributors with number of commits
 	contributors = shortlog --summary --numbered
 	
+	
+
+
 	# List aliases.
 	aliases = config --get-regexp alias
 
 [branch]
-
 	# Show most recently changed branches first.
 	sort = -committerdate
-[color]
 
+[color]
 	# Use colors in Git commands that are capable of colored output when
 	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
 	ui = auto
+
 [color "status"]
 	added = yellow
 	changed = green
 	untracked = cyan
+
 [color "branch"]
 	current = cyan
 	local = green
@@ -39,14 +59,20 @@
 [help]
 	# Automatically correct and execute mistyped commands.
 	autocorrect = 1
+
 [init]
 	defaultBranch = main
+
 # [commit]
 # 	gpgsign = true
 # [gpg]
 # 	program = C:\\Program Files (x86)\\Gpg4win\\..\\GnuPG\\bin\\gpg.exe
+
 [filter "lfs"]
 	process = git-lfs filter-process
 	required = true
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
+
+[fetch]
+	prune = true

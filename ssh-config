@@ -1,0 +1,16 @@
+Host ssh.dev.azure.com
+  IdentityFile ~/.ssh/id_rsa
+  PubkeyAcceptedKeyTypes=ssh-rsa
+
+Host github.com
+  IdentityFile ~/.ssh/id_ed25519
+
+Host hostinger
+  HostName 82.180.153.80
+  IdentityFile ~/.ssh/hostinger
+  User u341496210
+  Port 65002
+
+Host Zabbix
+  HostName 10.23.1.36
+  User pdasolucoes
