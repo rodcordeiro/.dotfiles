@@ -23,6 +23,8 @@ Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%
 Set-PSReadlineKeyHandler -Key Tab -Function Complete
 Set-PSReadlineOption -ShowToolTips
 
+
+
 # Clears terminal before starting
 Clear-Host
 
@@ -71,6 +73,7 @@ function Prompt {
     .DESCRIPTION
         Changes PS Prompt
     #>
+  
   $BackgroundColor = [Console]::BackgroundColor
   $IsAdmin = (New-Object Security.Principal.WindowsPrincipal ([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
   # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();

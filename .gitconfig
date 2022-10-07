@@ -14,7 +14,7 @@
 
 	# Search for commits containing or related to given card number. Example:
 	# PS> git card 1818
-	card = log --all-match -i --full-history --all --oneline --grep
+	search = log --all-match -i --full-history --all --oneline --grep
 	
 	# Git flow management
 	feat = log --all-match -i --full-history --all --oneline --grep feat
@@ -32,8 +32,6 @@
 	contributors = shortlog --summary --numbered
 	
 	
-
-
 	# List aliases.
 	aliases = config --get-regexp alias
 
@@ -76,3 +74,6 @@
 
 [fetch]
 	prune = true
+
+[push]
+	autoSetupRemote = true
