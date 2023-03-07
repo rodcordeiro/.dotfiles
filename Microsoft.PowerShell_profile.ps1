@@ -173,6 +173,7 @@ function ReloadPDA {
 
 ## ALIASES
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
+Set-Alias postman "$($env:USERPROFILE)\AppData\Local\Postman\Postman.exe"
 Set-Alias activate ".\.venv\scripts\activate"
 Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio\Beekeeper Studio.exe"
 Set-Alias yt "C:\tools\youtube-dl.exe"
@@ -182,11 +183,11 @@ Set-Alias '??' Get-GoogleAnswer
 Set-Alias 'Check-Network' Read-NetworkSpeed
 
 ## PERSONAL_VARIABLES
-$env:PAT = ""
-$env:GOOGLE_TOKEN = ""
-$env:disc_darthside = ""
-$env:disc_testes = ""
-$env:PSGToken = "" 
+$env:PAT = "xo354vjc7qpk2znu734ohnyefot73pbvpzc2mahvw57lwi5okkrq"
+$env:GOOGLE_TOKEN = "AIzaSyDbRlNXxJf272Sg4Zdr5e1-vQjWw6veL-I"
+$env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
+$env:disc_testes = "https://discord.com/api/webhooks/699699746855452673/DQMga4GEYErNQ2dYCEciHVhy8RjF7Ce3ODPRnWiBDO-HaNqlIiWw2asrePG62Qw-YXcw"
+$env:PSGToken = "oy2i23pvkarll566y7qayup3osq7ipludfjlfzibmllrae" 
 
 $env:ANDROID_HOME = 'C:\Android\Sdk'
 $env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"

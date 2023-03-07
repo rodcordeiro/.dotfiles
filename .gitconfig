@@ -6,6 +6,7 @@
   path = .gitconfig-pda
 [safe]
 	directory = C:/Users/rodrigo/projetos/pda/Desktop.Etiquetas.Electron
+	directory = C:/Users/rodrigo.mendonca/projetos/pda/libPda
 [alias]
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline --decorate=auto -n 20 --graph --abbrev-commit
