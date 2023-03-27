@@ -12,7 +12,7 @@ Import-Module ProfileFever
 Import-Module WindowsConsoleFonts
 
 Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"
-
+import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pspda.psd1" -Verbose
 
 # Set terminal configs
 Set-ConsoleFont "LiterationMono NF"
@@ -182,12 +182,13 @@ Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 
 Set-Alias '??' Get-GoogleAnswer
 Set-Alias 'Check-Network' Read-NetworkSpeed
 
+
 ## PERSONAL_VARIABLES
-$env:PAT = "xo354vjc7qpk2znu734ohnyefot73pbvpzc2mahvw57lwi5okkrq"
-$env:GOOGLE_TOKEN = "AIzaSyDbRlNXxJf272Sg4Zdr5e1-vQjWw6veL-I"
-$env:disc_darthside = "https://discord.com/api/webhooks/912344934001029160/G_KBojJ9HfJn-6_FNE_mTE1ILfvJYuxBo1kw2uPxMh3xZxArH8ukIReSMP7bHQPPPXT-"
-$env:disc_testes = "https://discord.com/api/webhooks/699699746855452673/DQMga4GEYErNQ2dYCEciHVhy8RjF7Ce3ODPRnWiBDO-HaNqlIiWw2asrePG62Qw-YXcw"
-$env:PSGToken = "oy2i23pvkarll566y7qayup3osq7ipludfjlfzibmllrae" 
+$env:PAT = ""
+$env:GOOGLE_TOKEN = ""
+$env:disc_darthside = "h"
+$env:disc_testes = ""
+$env:PSGToken = "" 
 
 $env:ANDROID_HOME = 'C:\Android\Sdk'
 $env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
