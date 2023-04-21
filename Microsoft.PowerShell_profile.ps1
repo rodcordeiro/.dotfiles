@@ -186,7 +186,7 @@ Set-Alias 'Check-Network' Read-NetworkSpeed
 ## PERSONAL_VARIABLES
 $env:PAT = ""
 $env:GOOGLE_TOKEN = ""
-$env:disc_darthside = "h"
+$env:disc_darthside = ""
 $env:disc_testes = ""
 $env:PSGToken = "" 
 

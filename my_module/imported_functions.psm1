@@ -1719,4 +1719,9 @@ Function Read-NetworkSpeed {
         # Send-MailMessage -To kharper@annaly.com,vherrera@annaly.com -From kharper@annaly.com -SmtpServer nyprodmx01 -Subject "Network Adapter is not at 1 Gbps" -Body ("Current speed is " + ($adapter.Speed / 1000000) + "Mbps")
     }
 }
+
+Function Get-RandomSecret {
+    node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
+}
+
 Export-ModuleMember -Function '*'
