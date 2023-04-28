@@ -219,7 +219,7 @@ Function Discord {
         $Webhook = $env:disc_testes
     }
 
-    Invoke-WebRequest -Uri $Webhook -Method POST -Headers $headers -WebSession $session -Body "$($body | ConvertTo-Json)" -ErrorAction SilentlyContinue
+    Invoke-WebRequest -Uri $Webhook -Method POST -Headers $headers -WebSession $session -Body "$($body | ConvertTo-Json)" -UseBasicParsing -ErrorAction SilentlyContinue
 }
 Export-ModuleMember -Function Discord
 
@@ -262,7 +262,6 @@ function Update-Repos {
             Write-Output "Repo $repo"    
             Set-Location $repo
             $git = isInsideGit
-            # $lib = hasPdaLib
             if ($git -and $(git remote -v | Select-String 'fetch')) {
                 $branches = $(git branch | select-string -NotMatch "remote")
                 $currentBranch = ''

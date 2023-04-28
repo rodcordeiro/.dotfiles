@@ -182,16 +182,18 @@ Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 
 Set-Alias '??' Get-GoogleAnswer
 Set-Alias 'Check-Network' Read-NetworkSpeed
 
-
 ## PERSONAL_VARIABLES
 $env:PAT = ""
 $env:GOOGLE_TOKEN = ""
 $env:disc_darthside = ""
 $env:disc_testes = ""
-$env:PSGToken = "" 
+$env:PSGToken = ""
+## Whatsapp BOT
+$env:DEV_TOKEN = '' 
+$env:DEV_APP_ID = ''
 
-$env:ANDROID_HOME = 'C:\Android\Sdk'
-$env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
+$env:ANDROID_HOME = ''
+$env:Path = ""
 
 
 # https://en.wikipedia.org/wiki/ANSI_escape_code

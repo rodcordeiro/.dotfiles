@@ -10,7 +10,3 @@ Host hostinger
   IdentityFile ~/.ssh/hostinger
   User u341496210
   Port 65002
-
-Host Zabbix
-  HostName 10.23.1.36
-  User pdasolucoes
