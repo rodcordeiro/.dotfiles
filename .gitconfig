@@ -1,5 +1,9 @@
 [includeIf "gitdir:~/projetos/personal/"]
   path = .gitconfig-rod
+[includeIf "gitdir:~/projetos/ers/"]
+  path = .gitconfig-rod
+[includeIf "gitdir:~/projetos/innovagenius/"]
+  path = .gitconfig-rod
 [includeIf "gitdir:~/projetos/estudos/"]
   path = .gitconfig-rod
 [includeIf "gitdir:~/projetos/pda/"]

@@ -90,7 +90,7 @@ function clone {
     $destiny = if ($Folder) { $Folder } else { $pwd }
     $localFolder = if ($Alias) { $Alias } else { $(Split-Path -Path $repository -Leaf) }
 
-    if ($(Split-Path -Path $destiny -Leaf) -eq 'personal' -Or $(Split-Path -Path $destiny -Leaf) -eq 'pda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'estudos' -Or $(Split-Path -Path $destiny -Leaf) -eq 'koda' -Or $confirm) {
+    if ($(Split-Path -Path $destiny -Leaf) -eq 'personal' -Or $(Split-Path -Path $destiny -Leaf) -eq 'pda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'estudos' -Or $(Split-Path -Path $destiny -Leaf) -eq 'koda' -Or $(Split-Path -Path $destiny -Leaf) -eq 'ers' -Or $(Split-Path -Path $destiny -Leaf) -eq 'innovagenius' -Or $confirm) {
         if ($folder) { Set-Location $(Resolve-Path -Path $Folder) }
         git clone $repository $(if ($Alias) { $Alias })
         Set-Location $(Resolve-Path -Path $localFolder)
