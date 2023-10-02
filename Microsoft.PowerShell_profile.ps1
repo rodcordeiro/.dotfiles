@@ -11,8 +11,7 @@ Import-Module SecurityFever
 Import-Module ProfileFever
 Import-Module WindowsConsoleFonts
 
-Import-Module "$($env:USERPROFILE)\projetos\personal\.dotfiles\my_module\mymodule.psd1"
-import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pspda.psd1" -Verbose
+import-Module "$($env:USERPROFILE)\projetos\personal\PSROD\psrod.psd1"
 
 # Set terminal configs
 Set-ConsoleFont "LiterationMono NF"
@@ -20,9 +19,18 @@ Set-TerminalIconsTheme -ColorTheme devblackops -IconTheme devblackops
 Set-LoggingDefaultLevel -Level 'WARNING'
 Add-LoggingTarget -Name Console
 Add-LoggingTarget -Name File -Configuration @{Path = 'C:\Scripts\script_log.%{+%Y%m%d}.log'; Level = 'WARNING' }
-Set-PSReadlineKeyHandler -Key Tab -Function Complete
-Set-PSReadlineOption -ShowToolTips
 
+
+# Set-PSReadlineKeyHandler -Key Tab -Function Complete
+Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
+Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
+Set-PSReadlineOption -HistorySearchCursorMovesToEnd
+
+# Autosuggestions for PSReadline
+Set-PSReadlineOption -ShowToolTips
+# PredictionSource, history search commands used
+Set-PSReadlineOption -PredictionSource History
 
 
 # Clears terminal before starting
@@ -63,6 +71,7 @@ enum Colors {
   Magenta = "0"
   Yellow = "0"
   White = "0"
+  
 }
 
 # Customizing prompt
@@ -120,7 +129,7 @@ function Prompt {
       Write-host $Glyphs.DArrow -ForegroundColor gray  -NoNewline
     }
     else {
-      Write-host ' ' -ForegroundColor gray  -NoNewline
+      # Write-host ' ' -ForegroundColor gray  -NoNewline
     }
     if ($(Test-Path -Path "$(git rev-parse --show-toplevel)/.deprecated")) {
       Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
@@ -167,8 +176,8 @@ function GetAllFiles {
 }
  
 function ReloadPDA {
-  remove-module pspda;
-  import-Module "$($env:USERPROFILE)\projetos\personal\PSPDA\pspda.psd1" -Verbose
+  remove-module psrod;
+  import-Module "$($env:USERPROFILE)\projetos\personal\PSROD\psrod.psd1" -Verbose
 }
 
 ## ALIASES
@@ -186,14 +195,13 @@ Set-Alias 'Check-Network' Read-NetworkSpeed
 $env:PAT = ""
 $env:GOOGLE_TOKEN = ""
 $env:disc_darthside = ""
-$env:disc_testes = ""
+$env:DISCORD_WEBHOOK = ""
 $env:PSGToken = ""
-## Whatsapp BOT
-$env:DEV_TOKEN = '' 
-$env:DEV_APP_ID = ''
+$env:DEV_TOKEN = ""
+$env:DEV_APP_ID = ""
 
-$env:ANDROID_HOME = ''
-$env:Path = ""
+$env:ANDROID_HOME = 'C:\Android\Sdk'
+$env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
 
 
 # https://en.wikipedia.org/wiki/ANSI_escape_code
