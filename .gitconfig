@@ -1,18 +1,8 @@
-[includeIf "gitdir:~/projetos/personal/"]
+[includeIf "gitdir:~/"]
   path = .gitconfig-rod
-[includeIf "gitdir:~/projetos/ers/"]
-  path = .gitconfig-rod
-[includeIf "gitdir:~/projetos/innovagenius/"]
-  path = .gitconfig-rod
-[includeIf "gitdir:~/projetos/estudos/"]
-  path = .gitconfig-rod
-[includeIf "gitdir:~/projetos/pda/"]
-  path = .gitconfig-pda
 [includeIf "gitdir:~/projetos/koda/"]
   path = .gitconfig-koda
-[safe]
-	directory = C:/Users/rodrigo/projetos/pda/Desktop.Etiquetas.Electron
-	directory = C:/Users/rodrigo.mendonca/projetos/pda/libPda
+
 [alias]
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline --decorate=auto -n 20 --graph --abbrev-commit
@@ -20,6 +10,7 @@
 	graph = log --graph  --color --pretty=format:"%C(yellow)%H%C(green)%d%C(reset)%n%x20%cd%n%x20%cn%x20(%ce)%n%x20%s%n"
 	last = log --name-status --diff-filter="ACDMRT" -1 -U
 	json = log --pretty=format:'{%n  \"commit\": \"%H\",%n  \"abbreviated_commit\": \"%h\",%n  \"tree\": \"%T\",%n  \"abbreviated_tree\": \"%t\",%n  \"parent\": \"%P\",%n  \"abbreviated_parent\": \"%p\",%n  \"refs\": \"%D\",%n  \"encoding\": \"%e\",%n  \"subject\": \"%s\",%n  \"sanitized_subject_line\": \"%f\",%n  \"body\": \"%b\",%n  \"commit_notes\": \"%N\",%n  \"verification_flag\": \"%G?\",%n  \"signer\": \"%GS\",%n  \"signer_key\": \"%GK\",%n  \"author\": {%n    \"name\": \"%aN\",%n    \"email\": \"%aE\",%n    \"date\": \"%aD\"%n  },%n  \"commiter\": {%n    \"name\": \"%cN\",%n    \"email\": \"%cE\",%n    \"date\": \"%cD\"%n  }%n},'
+	whatadded =  log --pretty=format:'%C(cyan)%h%Creset %C(bold)%cr%Creset %Cgreen<%an [%ae]>%Creset %s' --diff-filter=A # Search for the commit where file were added. git whatadded -- filename.js
 
 	# Search for commits containing or related to given card number. Example:
 	# PS> git card 1818
