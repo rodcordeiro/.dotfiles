@@ -1,17 +1,21 @@
+# Clears terminal before starting
+Clear-Host
+
 # Changes output encoding to UTF8
 $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
 
 # Modules imports
 Import-Module Terminal-Icons
 import-module PSScriptAnalyzer
-# Import-Module platyPS  # https://github.com/PowerShell/platyPS
+Import-Module platyPS  # https://github.com/PowerShell/platyPS
 Import-Module Logging # https://logging.readthedocs.io/en/latest/functions/Add-LoggingLevel/
 Import-Module PSSQLite # https://github.com/RamblingCookieMonster/PSSQLite
 Import-Module SecurityFever
 Import-Module ProfileFever
 Import-Module WindowsConsoleFonts
-Import-Module psrod
 import-module psrabbitmq
+Import-Module psrod
+import-module psbanky
 
 # Set-PSReadlineKeyHandler -Key Tab -Function Complete
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
@@ -21,12 +25,6 @@ Set-PSReadlineOption -HistorySearchCursorMovesToEnd
 
 # Autosuggestions for PSReadline
 Set-PSReadlineOption -ShowToolTips
-# PredictionSource, history search commands used
-# Set-PSReadlineOption -PredictionSource History
-
-
-# Clears terminal before starting
-Clear-Host
 
 $Glyphs = [PSCustomObject]@{
   Branch  = "$([char]0xE0A0)" #  Version control branch
@@ -62,7 +60,6 @@ enum Colors {
   White = "0"
 }
 
-
 # My personal functions
 Function isInsideGit() {
   try {
@@ -75,6 +72,7 @@ Function isInsideGit() {
     return $false
   }
 }
+
 function GetAllFiles {
   $items = @(Get-ChildItem -Hidden; Get-ChildItem)
   $items
@@ -152,44 +150,8 @@ function Prompt {
       Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
     }
   }
-   
       
   return "$(if ($IsAdmin) { ' #' } else { ' $' })> "
-}
-
-
-function Deploy {
-  param(
-    [parameter(ValueFromPipelineByPropertyName)]
-    [ValidateNotNullOrEmpty()]
-    [ValidateSet('Admin', 'Amostra')]
-    [string]$Projeto
-  )
-  begin {
-    
-    switch ($Projeto) {
-      "Admin" {
-        $buildCommand = "pnpm build";
-        $destinationPath = "/var/www/html";
-      }
-      "Amostra" { 
-        $buildCommand = "pnpm build:dev";
-        $destinationPath = "/var/www/amostra";
-      }
-      Default {
-        throw "Projeto inválido!"
-      }
-    }
-
-  }
-  process {
-    Invoke-Expression $buildCommand -ErrorAction Stop;
-    if ($?) {
-      scp -r ./dist frontend:/home/rodrigo.cordeiro@torra.local;
-      show-notification Deploy 'Insira a senha para finalizar o deploy'
-      ssh -t frontend "sudo cp -rf /home/$($env:USERNAME)@torra.local/dist/* $($destinationPath)"
-    }
-  }
 }
 
 function totp {
@@ -198,69 +160,55 @@ function totp {
 
 function Coluna {
   timer 300
-  Show-Notification -ToastTitle 'Ajustar coluna' -ToastText 'Erga-se, pavao. Aprume-se Leopardo'
+  $strings = @(   
+    "Ajustar a porra da coluna!",
+    "Olha a postura, ou vai acabar com menos carisma!",
+    "Ja falei do carai da postura hoje?",
+    "Vamos, ajuste a postura, cavaleiro torto nao ganha XP.",
+    "Arruma a coluna, ou o clerigo vai cobrar caro pra curar isso.",
+    "Goblins tem uma postura melhor que voce, pelos deuses!",
+    "Tirou 1 no dado de Constituicao? Levanta essa coluna, guerreiro!",
+    "O que e isso, tirou um nos dados? Arrume essa coluna rapaz!",
+    "Se continuar assim, ate o dragao vai ter do de você.",
+    "A coluna torta nao da bonus de defesa, ajuste isso ja!",
+    "Lembre-se: postura correta da vantagem em testes de Força.",
+    "Torto desse jeito, nem o bardo consegue te convencer de que esta bem.",
+    "Sente-se como se estivesse em um banquete real, nao numa taverna caindo aos pedaços.",
+    "Se voce fosse um elfo, ja estaria ouvindo sermao sobre postura ha horas.",
+    "Um heroi de verdade mantem a coluna ereta, ate no campo de batalha.",
+    "Veio corcunda!"
+  )
+  # Randomly select one string
+  $message = Get-Random -InputObject $strings
+  tts $message
   Coluna
 } 
 function Agua {
-  timer 300
-  Show-Notification -ToastTitle 'Beber Agua' -ToastText 'Hora da hidratação \o/'
+  timer 600
+  $strings = @(
+    "E hora da hidrataçao! Repetindo, e hora da hidrataçao!",
+    "Bebe agua, abençoado, ou vai receber dano por desidrataçao!",
+    "Olha a agua, nao va falhar no teste de sobrevivencia.",
+    "Um gole de agua por obséquio, seu HP depende disso.",
+    "Faz o favor de tomar uma aguinha? Seu rim agradece e o clerigo tambem.",
+    "Ate o dragao bebe agua, quem dira voce.",
+    "Se hidratar e como recarregar poçoes de mana, beba agua!",
+    "Você está em estado 'Desidratado'. Solução: beber agua.",
+    "Falha critica em sobrevivencia? Nao, e so desidrataçao. Beba agua!",
+    "A hidrataçao e o segredo dos herois, siga o exemplo dos bardos!",
+    "Olha a agua, se nao o mestre vai aplicar dano nao letal.",
+    "Bebe agua, ou vai acordar com condiçao 'exausto' no proximo descanso longo.",
+    "Um guerreiro sabio sabe que hidrataçao e metade da batalha!",
+    "Ate os goblins param pra beber agua, o que voce esta esperando?",
+    "Sem agua, voce nao vai ganhar bonus de ataque, confia.",
+    "Olha a agua"
+  )
+  # Randomly select one string
+  $message = Get-Random -InputObject $strings
+  tts $message
   Agua
 }
 
-function auth {
-  param(
-    [Switch]$Sso,
-    [Switch]$Admin,
-    [Int]$Sistema,
-    [Switch]$Write
-  )
-  $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]" 
-  $headers.Add("Content-Type", "application/json")
-  $headers.Add("Accept", "application/json")
-  
-  if (!$Sistema) {
-    throw "Sistema não informado!"
-  }
-  
-  # $env:TORRA_TOTP_SHARED_SECRET
-  if ($Admin) {
-    $user = ""
-    $body = "{`"login`": `"`", `"senha`": `"T$`" `}"
-  }
-  else {
-    $user = ""
-    $body = "{`"login`": `"`", `"senha`": `"@`" `, `"otp`": `"$(totp)`"  }"
-  }
-  
-  $refresh_token = $(Invoke-RestMethod 'http://hml.api.torratorra.com.br:5703/Auth/v1/Autenticacao' -Method 'POST' -Headers $headers -Body $body)
-  
-  if (!$refresh_token) { throw $refresh_token }
-
-  $body = "  {    `"login`": `"$user`",    `"refreshToken`": `"$($refresh_token.refreshToken)`",    `"codigoCliente`": `"1`",    `"codigoEmpresa`": `"1`",    `"codigoSistema`": $Sistema }  "
-  $response = Invoke-RestMethod 'http://hml.api.torratorra.com.br:5703/Auth/v1/Autenticacao/refresh-Token' -Method 'POST' -Headers $headers -Body $body
-  
-  if ($Sso) {
-    $headers.Add("Authorization", "Bearer " + $response.accessToken)
-    $body = "  {    `"refreshToken`": `"$($refresh_token.refreshToken)`" }  "
-    $responseSso = Invoke-RestMethod 'http://hml.api.torratorra.com.br:5703/Auth/v1/Autenticacao/sso/request' -Method 'POST' -Headers $headers -Body $body
-    if ($Write) {
-      Write-Host $responseSso
-    }
-    else {
-      $responseSso | clip
-    }
-    
-    return
-  }
-
-  if ($Write) {
-    Write-Host $response.accessToken
-  }
-  else {
-    $response.accessToken | clip
-  }
-  
-}
 
 
 
@@ -273,39 +221,21 @@ Set-Alias postman "$($env:USERPROFILE)\AppData\Local\Postman\Postman.exe"
 # Set-Alias yt "C:\tools\youtube-dl.exe"
 Set-Alias la GetAllFiles
 Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 20\Common7\IDE\ssms.exe"
-Set-Alias '??' Get-GoogleAnswer
-Set-Alias 'Check-Network' Read-NetworkSpeed
 Set-Alias vi nvim
 Set-Alias vim nvim
 
 ## PERSONAL_VARIABLES
-$env:PAT = ''
-$env:GOOGLE_TOKEN = ''
-$env:disc_darthside = ''
-$env:DISCORD_WEBHOOK = ''
-$env:PSGToken = ''
-$env:DEV_TOKEN = ''
-$env:DEV_APP_ID = ''
-$env:ASPNETCORE_ENVIRONMENT = ''
-$env:NODE_ENV = ''
-$env:TORRA_TOTP_SHARED_SECRET = ''
-# 
-# [string] $strUser = '@@@@@'
-# $strPass = ConvertTo-SecureString -String '@@@@@' -AsPlainText -Force
-# $Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($strUser, $strPass)
-
-# $env:Rabbit_Params = @{
-#   ComputerName = '@@@@@';
-#   Timeout      = 100000;
-#   Credential   = $Cred;
-#   QueueName    = 'ps1';
-#   Exchange     = "xxx";
-#   ExchangeType = "Topic";
-#   Ssl          = "None"
-# }
-# $env:Rabbit_Connection = New-RabbitMqConnectionFactory -ComputerName @@@@@ -Credential $Cred
-
-$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.2.13-hotspot"
+$env:PAT = ""
+$env:GOOGLE_TOKEN = ""
+$env:disc_darthside = ""
+$env:DISCORD_WEBHOOK = ""
+$env:PSGToken = ""
+$env:DEV_TOKEN = ""
+$env:DEV_APP_ID = ""
+$env:ASPNETCORE_ENVIRONMENT = ""
+$env:NODE_ENV = ""
+$env:TORRA_TOTP_SHARED_SECRET = ""
+$env:JAVA_HOME = ""
 # $env:ANDROID_HOME = 'C:\Android\Sdk'
 # $env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
 $env:Path = "$env:Path;$env:USERPROFILE\tools\nvim\bin"
@@ -315,4 +245,4 @@ if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
 
-# start-job -FilePath C:\@@@@@\rabbitmq_notifications.ps1 -Name Rabbit_messages | Out-Null
+# start-job -FilePath C:\Users\rodrigo.cordeiro\Documents\WindowsPowerShell\rabbitmq_notifications.ps1 -Name Rabbit_messages | Out-Null
