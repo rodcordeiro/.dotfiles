@@ -1,3 +1,4 @@
+
 # Clears terminal before starting
 Clear-Host
 
@@ -13,9 +14,11 @@ Import-Module PSSQLite # https://github.com/RamblingCookieMonster/PSSQLite
 Import-Module SecurityFever
 Import-Module ProfileFever
 Import-Module WindowsConsoleFonts
-import-module psrabbitmq
+import-module PSRabbitMQ
 Import-Module psrod
 import-module psbanky
+# import-module psmoneto
+import-module CredentialManager
 
 # Set-PSReadlineKeyHandler -Key Tab -Function Complete
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
@@ -60,6 +63,7 @@ enum Colors {
   White = "0"
 }
 
+
 # My personal functions
 Function isInsideGit() {
   try {
@@ -88,6 +92,22 @@ function Get-ExitTime {
   return timer $($($(CalcularSaida -Entrada $Entrada -Almoco $Almoco -Retorno $Retorno -Output).TimeOfDay.TotalSeconds) - $([datetime]::Now.TimeOfDay.TotalSeconds)); Show-Notification -ToastTitle 'É hora de partir!'
 }
 
+function Update-ExpoToken {
+  if ($PWD.Path -match [regex]::Escape("C:\Users\$env:USERNAME\projetos\torra")) {
+    $env:expo_token = 'REPLACE_THIS'
+  }
+  else {
+    $env:expo_token = "REPLACE_THIS"
+  }
+}
+
+# Hook into the prompt function to update automatically
+function prompt {
+  Update-ExpoToken
+  "PS $($PWD.Path)> "  # Customize your prompt if needed
+}
+
+
 # Customizing prompt
 function Prompt {
   <#
@@ -102,6 +122,8 @@ function Prompt {
   # # $CmdPromptUser = [Security.Principal.WindowsIdentity]::GetCurrent();
   $is_inside_git = isInsideGit
   
+  Update-ExpoToken
+
   if ($is_inside_git) {
     Write-Host $Glyphs.NBSP -BackgroundColor $([Colors]::$BackgroundColor).value__ -NoNewline
     Write-Host $Glyphs.Branch -BackgroundColor $([Colors]::$BackgroundColor).value__ -ForegroundColor $BackgroundColor -NoNewline
@@ -150,8 +172,48 @@ function Prompt {
       Write-host '[DEPRECATED]' -ForegroundColor white -BackgroundColor red  -NoNewline  
     }
   }
+   
       
   return "$(if ($IsAdmin) { ' #' } else { ' $' })> "
+}
+
+
+function Deploy {
+  param(
+    [parameter(ValueFromPipelineByPropertyName)]
+    [ValidateNotNullOrEmpty()]
+    [ValidateSet('Admin', 'Amostra', 'Agendamento')]
+    [string]$Projeto
+  )
+  begin {
+    
+    switch ($Projeto) {
+      "Admin" {
+        $buildCommand = "pnpm build";
+        $destinationPath = "/var/www/html";
+      }
+      "Amostra" { 
+        $buildCommand = "pnpm build:dev";
+        $destinationPath = "/var/www/amostra";
+      }
+      "Agendamento" { 
+        $buildCommand = "pnpm build ";
+        $destinationPath = "/var/www/agendamento";
+      }
+      Default {
+        throw "Projeto inválido!"
+      }
+    }
+
+  }
+  process {
+    Invoke-Expression $buildCommand -ErrorAction Stop;
+    if ($?) {
+      scp -r ./dist frontend:/home/rodrigo.cordeiro@torra.local;
+      show-notification Deploy 'Insira a senha para finalizar o deploy'
+      ssh -t frontend "sudo cp -rf /home/$($env:USERNAME)@torra.local/dist/* $($destinationPath)"
+    }
+  }
 }
 
 function totp {
@@ -159,6 +221,9 @@ function totp {
 }
 
 function Coluna {
+  param(
+    [switch]$silent
+  )
   timer 300
   $strings = @(   
     "Ajustar a porra da coluna!",
@@ -180,10 +245,16 @@ function Coluna {
   )
   # Randomly select one string
   $message = Get-Random -InputObject $strings
-  tts $message
-  Coluna
+  if (-not $silent) {
+    tts $message
+  }
+  Show-Notification -ToastTitle "Coluna!" -ToastText $message -IconUri "https://atlas-content-cdn.pixelsquid.com/assets_v2/240/2409631179109046100/jpeg-600/G03.jpg" -Group 'posture_notification' -Tag 'posture_notification'
+  Coluna -silent:$silent
 } 
 function Agua {
+  param(
+    [switch]$silent
+  )
   timer 600
   $strings = @(
     "E hora da hidrataçao! Repetindo, e hora da hidrataçao!",
@@ -205,44 +276,128 @@ function Agua {
   )
   # Randomly select one string
   $message = Get-Random -InputObject $strings
-  tts $message
-  Agua
+  if (-not $silent) {
+    tts $message
+  }
+  Show-Notification -ToastTitle "Olha a áaagua!" -ToastText $message -IconUri "https://png.pngtree.com/png-clipart/20240615/original/pngtree-glass-with-water-isolated-png-image_15329246.png" -Group 'water_notification' -Tag 'water_notification'
+  Agua -silent:$silent
 }
 
+function auth {
+  param(
+    [Switch]$Sso,
+    [Switch]$Admin,
+    [Int]$Sistema, 
+    [Switch]$Prod,
+    [Switch]$Write
+  )
+  $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]" 
+  $headers.Add("Content-Type", "application/json")
+  $headers.Add("Accept", "application/json")
+  
+  if (!$Sistema) {
+    throw "Sistema não informado!"
+  }
+  
+  # $env:TORRA_TOTP_SHARED_SECRET
+  if ($Admin) {
+    $user = "admin"
+    $body = "{`"login`": `"REPLACE_THIS`", `"senha`": `"REPLACE_THIS$`" `}"
+  }
+  else {
+    $user = "REPLACE_THIS"
+    $body = "{`"login`": `"REPLACE_THIS`", `"senha`": `"@REPLACE_THIS`" `, `"otp`": `"$(totp)`"  }"
+  }
+  if ($Prod) {
+    $url = "https://"
+  }
+  else {
+    $url = "http://hml."
+  }
+  $refresh_token = $(Invoke-RestMethod "$($url)api.torratorra.com.br:5703/Auth/v1/Autenticacao" -Method 'POST' -Headers $headers -Body $body)
+  
+  if (!$refresh_token) { throw $refresh_token }
 
+  $body = "  {    `"login`": `"$user`",    `"refreshToken`": `"$($refresh_token.refreshToken)`",    `"codigoCliente`": `"1`",    `"codigoEmpresa`": `"1`",    `"codigoSistema`": $Sistema }  "
+  $response = Invoke-RestMethod "$($url)api.torratorra.com.br:5703/Auth/v1/Autenticacao/refresh-Token" -Method 'POST' -Headers $headers -Body $body
+  
+  if ($Sso) {
+    $headers.Add("Authorization", "Bearer " + $response.accessToken)
+    $body = "  {    `"refreshToken`": `"$($refresh_token.refreshToken)`" }  "
+    $responseSso = Invoke-RestMethod "$($url)api.torratorra.com.br:5703/Auth/v1/Autenticacao/sso/request" -Method 'POST' -Headers $headers -Body $body
+    if ($Write) {
+      Write-Host $responseSso
+    }
+    else {
+      $responseSso | clip
+    }
+    
+    return
+  }
 
+  if ($Write) {
+    Write-Host $response.accessToken
+  }
+  else {
+    $response.accessToken | clip
+  }
+  
+}
 
+function UpdateOcelot {
+  param(
+    [switch]$Prod,
+    [switch]$KeepExistingRoutes,
+    [string]$SourceFile
+  )
+  if (-not $SourceFile) {
+    $SourceFile = (Resolve-Path $env:USERPROFILE/projetos/torra/auth/Presentation.Gateway/ocelot.json)
+  }
+
+  Export-OcelotEntry -keys @(
+    @{porta = 5701; chave = "Auth" },
+    @{porta = 5702; chave = "Admin" },
+    @{porta = 5705; chave = "Ecommerce" },
+    @{porta = 5706; chave = "Amostra" },
+    @{porta = 5707; chave = "DataIntegration" },
+    @{porta = 5710; chave = "Agendamento" },
+    @{porta = 5712; chave = "FIDC" },
+    @{porta = 5715; chave = "Inventario" }
+  ) -Prod:$Prod -SourceFile:$SourceFile -KeepExistingRoutes:$KeepExistingRoutes
+}
 
 ## ALIASES
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
 Set-Alias postman "$($env:USERPROFILE)\AppData\Local\Postman\Postman.exe"
-# Set-Alias activate ".\.venv\scripts\activate"
-# Set-Alias beekeeper "$($env:USERPROFILE)\AppData\Local\Programs\beekeeper-studio\Beekeeper Studio.exe"
-# Set-Alias yt "C:\tools\youtube-dl.exe"
 Set-Alias la GetAllFiles
 Set-Alias ssms "${env:ProgramFiles(x86)}\Microsoft SQL Server Management Studio 20\Common7\IDE\ssms.exe"
 Set-Alias vi nvim
 Set-Alias vim nvim
+Set-Alias unmined unmined-cli.exe
 
 ## PERSONAL_VARIABLES
-$env:PAT = ""
-$env:GOOGLE_TOKEN = ""
-$env:disc_darthside = ""
-$env:DISCORD_WEBHOOK = ""
-$env:PSGToken = ""
-$env:DEV_TOKEN = ""
-$env:DEV_APP_ID = ""
-$env:ASPNETCORE_ENVIRONMENT = ""
-$env:NODE_ENV = ""
-$env:TORRA_TOTP_SHARED_SECRET = ""
-$env:JAVA_HOME = ""
-# $env:ANDROID_HOME = 'C:\Android\Sdk'
-# $env:Path = "$env:Path;$env:ANDROID_HOME\emulator;$env:ANDROID_HOME\tools;$env:ANDROID_HOME\tools\bin;$env:ANDROID_HOME\platform-tools"
+$env:PAT = "REPLACE_THIS"
+$env:GOOGLE_TOKEN = "REPLACE_THIS"
+$env:disc_darthside = "REPLACE_THIS"
+$env:DISCORD_WEBHOOK = "REPLACE_THIS"
+$env:PSGToken = "REPLACE_THIS" 
+$env:DEV_TOKEN = 'REPLACE_THIS'
+$env:DEV_APP_ID = 'REPLACE_THIS'
+$env:ASPNETCORE_ENVIRONMENT = 'REPLACE_THIS'
+$env:NODE_ENV = 'REPLACE_THIS'
+$env:TORRA_TOTP_SHARED_SECRET = 'REPLACE_THIS'
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.2.13-hotspot"
+$env:expo_token = 'REPLACE_THIS'
 $env:Path = "$env:Path;$env:USERPROFILE\tools\nvim\bin"
+$env:Path = "$env:Path;$env:JAVA_HOME\bin"
+$env:Path = "$env:Path;$env:USERPROFILE\tools\unmined"
 
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
 
-# start-job -FilePath C:\Users\rodrigo.cordeiro\Documents\WindowsPowerShell\rabbitmq_notifications.ps1 -Name Rabbit_messages | Out-Null
+$now = [Datetime]::Now
+Show-Notification -ToastTitle 'Olha a coluna' -ToastText 'Nao esqueca de iniciar o lembrete da coluna.' -Schedule $now.AddSeconds(10)
+Show-Notification -ToastTitle 'Olha a aaaagua' -ToastText 'Nao esqueca de iniciar o lembrete da agua.' -Schedule $now.AddSeconds(30)
+# start-job -FilePath C:\Users\rodrigo.cordeiro\Documents\WindowsPowerShell\lembrete_agua.ps1 -Name lembrete_agua | Out-Null
