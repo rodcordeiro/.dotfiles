@@ -26,7 +26,7 @@ call plug#end()
 
 
 " REQUIRED: set your API key
-let g:codestats_api_key = 'REPLACE_THIS'
+let g:codestats_api_key = '[REPLACE_THIS]'
 
 
 " Prettier

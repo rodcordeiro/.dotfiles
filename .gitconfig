@@ -81,3 +81,12 @@
 
 [push]
 	autoSetupRemote = true
+	
+[pull]
+	rebase = true
+
+[core]
+	editor = vim
+	
+[diff]
+	algorithm = histogram
