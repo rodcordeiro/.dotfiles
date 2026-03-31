@@ -173,6 +173,34 @@ function totp {
   Get-TOTP -SharedSecret $env:TORRA_TOTP_SHARED_SECRET
 }
 
+function Invoke-DailyGitPull {
+  param(
+    [string]$RepoPath = "$HOME\Documents\obsidian",
+    [string]$StampFile = "$HOME\.daily-git-pull-obsidian"
+  )
+
+  if (-not (Test-Path $RepoPath)) {
+    return
+  }
+
+  $today = Get-Date -Format "yyyy-MM-dd"
+  $lastRun = if (Test-Path $StampFile) {
+    Get-Content $StampFile -ErrorAction SilentlyContinue
+  }
+
+  if ($lastRun -eq $today) {
+    return
+  }
+
+  Write-Host "Running daily git pull for $RepoPath..."
+  git -C $RepoPath pull
+
+  if ($LASTEXITCODE -eq 0) {
+    Set-Content -Path $StampFile -Value $today
+  }
+}
+
+
 function Coluna {
   param(
     [switch]$Speak
@@ -187,11 +215,11 @@ function Coluna {
     "Goblins tem uma postura melhor que voce, pelos deuses!",
     "Tirou 1 no dado de Constituicao? Levanta essa coluna, guerreiro!",
     "O que e isso, tirou um nos dados? Arrume essa coluna rapaz!",
-    "Se continuar assim, ate o dragao vai ter do de você.",
+    "Se continuar assim, ate o dragao vai ter do de vocÃª.",
     "A coluna torta nao da bonus de defesa, ajuste isso ja!",
-    "Lembre-se: postura correta da vantagem em testes de Força.",
+    "Lembre-se: postura correta da vantagem em testes de ForÃ§a.",
     "Torto desse jeito, nem o bardo consegue te convencer de que esta bem.",
-    "Sente-se como se estivesse em um banquete real, nao numa taverna caindo aos pedaços.",
+    "Sente-se como se estivesse em um banquete real, nao numa taverna caindo aos pedaÃ§os.",
     "Se voce fosse um elfo, ja estaria ouvindo sermao sobre postura ha horas.",
     "Um heroi de verdade mantem a coluna ereta, ate no campo de batalha.",
     "Veio corcunda!"
@@ -211,19 +239,19 @@ function Agua {
   )
   timer 600
   $strings = @(
-    "E hora da hidrataçao! Repetindo, e hora da hidrataçao!",
-    "Bebe agua, abençoado, ou vai receber dano por desidrataçao!",
+    "E hora da hidrataÃ§ao! Repetindo, e hora da hidrataÃ§ao!",
+    "Bebe agua, abenÃ§oado, ou vai receber dano por desidrataÃ§ao!",
     "Olha a agua, nao va falhar no teste de sobrevivencia.",
-    "Um gole de agua por obséquio, seu HP depende disso.",
+    "Um gole de agua por obsÃ©quio, seu HP depende disso.",
     "Faz o favor de tomar uma aguinha? Seu rim agradece e o clerigo tambem.",
     "Ate o dragao bebe agua, quem dira voce.",
-    "Se hidratar e como recarregar poçoes de mana, beba agua!",
-    "Você está em estado 'Desidratado'. Solução: beber agua.",
-    "Falha critica em sobrevivencia? Nao, e so desidrataçao. Beba agua!",
-    "A hidrataçao e o segredo dos herois, siga o exemplo dos bardos!",
+    "Se hidratar e como recarregar poÃ§oes de mana, beba agua!",
+    "VocÃª estÃ¡ em estado 'Desidratado'. SoluÃ§Ã£o: beber agua.",
+    "Falha critica em sobrevivencia? Nao, e so desidrataÃ§ao. Beba agua!",
+    "A hidrataÃ§ao e o segredo dos herois, siga o exemplo dos bardos!",
     "Olha a agua, se nao o mestre vai aplicar dano nao letal.",
-    "Bebe agua, ou vai acordar com condiçao 'exausto' no proximo descanso longo.",
-    "Um guerreiro sabio sabe que hidrataçao e metade da batalha!",
+    "Bebe agua, ou vai acordar com condiÃ§ao 'exausto' no proximo descanso longo.",
+    "Um guerreiro sabio sabe que hidrataÃ§ao e metade da batalha!",
     "Ate os goblins param pra beber agua, o que voce esta esperando?",
     "Sem agua, voce nao vai ganhar bonus de ataque, confia.",
     "Olha a agua"
@@ -234,10 +262,12 @@ function Agua {
   if ($Speak) {
     tts $message
   }
-  Show-Notification -ToastTitle "Olha a áaagua!" -ToastText $message -IconUri "https://png.pngtree.com/png-clipart/20240615/original/pngtree-glass-with-water-isolated-png-image_15329246.png" -Group 'water_notification' -Tag 'water_notification'
+  Show-Notification -ToastTitle "Olha a Ã¡aagua!" -ToastText $message -IconUri "https://png.pngtree.com/png-clipart/20240615/original/pngtree-glass-with-water-isolated-png-image_15329246.png" -Group 'water_notification' -Tag 'water_notification'
   Agua -silent:$silent
 }
- 
+
+
+
 function Get-AdoPipelineStatus {
   [CmdletBinding()]
   param (
@@ -283,6 +313,14 @@ function Get-AdoPipelineStatus {
   }
 }
 
+function Install-Dotnet {
+  Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+  .\dotnet-install.ps1 -Channel 8.0
+  Remove-Item .\dotnet-install.ps1
+  Write-Host "Malfeito feito"
+}
+
+
 ## ALIASES
 Set-Alias insomnia "$($env:USERPROFILE)\AppData\Local\insomnia\Insomnia.exe"
 Set-Alias postman "$($env:USERPROFILE)\AppData\Local\Postman\Postman.exe"
@@ -312,6 +350,9 @@ $ChocolateyProfile = "${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
+
+
+Invoke-DailyGitPull
 
 $now = [Datetime]::Now
 Show-Notification -ToastTitle 'Olha a coluna' -ToastText 'Nao esqueca de iniciar o lembrete da coluna.' -Schedule $now.AddSeconds(10)
