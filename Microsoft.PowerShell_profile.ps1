@@ -45,22 +45,22 @@ $Glyphs = [PSCustomObject]@{
 
 # BG = FG
 enum Colors {
-  Black = "9"
-  DarkBlue = "15"
-  DarkGreen = "15"
-  DarkCyan = "0"
-  DarkRed = "15"
+  Black       = "9"
+  DarkBlue    = "15"
+  DarkGreen   = "15"
+  DarkCyan    = "0"
+  DarkRed     = "15"
   DarkMagenta = "15"
-  DarkYellow = "0"
-  Gray = "0"
-  DarkGray = "6"
-  Blue = "0"
-  Green = "0"
-  Cyan = "0"
-  Red = "0"
-  Magenta = "0"
-  Yellow = "0"
-  White = "0"
+  DarkYellow  = "0"
+  Gray        = "0"
+  DarkGray    = "6"
+  Blue        = "0"
+  Green       = "0"
+  Cyan        = "0"
+  Red         = "0"
+  Magenta     = "0"
+  Yellow      = "0"
+  White       = "0"
 }
 
 
@@ -78,12 +78,13 @@ Function isInsideGit() {
 }
 
 function Update-ExpoToken {
-  if ($PWD.Path -match [regex]::Escape("C:\Users\$env:USERNAME\projetos\torra")) {
+  if ($PWD.Path -match [regex]::Escape("$HOME\projetos\torra")) {
     $env:expo_token = '[REPLACE_THIS]'
   }
   else {
     $env:expo_token = "[REPLACE_THIS]"
   }
+  $env:SENTRY_AUTH_TOKEN = '[REPLACE_THIS]'
 }
 
 
@@ -164,34 +165,34 @@ function GetAllFiles {
 }
 
 function Digita {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory, ValueFromRemainingArguments, Position = 0)]
-        [string[]]$Text,
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory, ValueFromRemainingArguments, Position = 0)]
+    [string[]]$Text,
 
-        [switch]$SemEnter
-    )
+    [switch]$SemEnter
+  )
 
-    $conteudo = ($Text -join ' ').Trim()
-    if ([string]::IsNullOrWhiteSpace($conteudo)) {
-        return
-    }
+  $conteudo = ($Text -join ' ').Trim()
+  if ([string]::IsNullOrWhiteSpace($conteudo)) {
+    return
+  }
 
-    # adb input text usa %s para espaço
-    $conteudo = $conteudo -replace ' ', '%s'
+  # adb input text usa %s para espaço
+  $conteudo = $conteudo -replace ' ', '%s'
 
-    & adb shell input text $conteudo
+  & adb shell input text $conteudo
 
-    if (-not $SemEnter) {
-        & adb shell input keyevent 66
-    }
+  if (-not $SemEnter) {
+    & adb shell input keyevent 66
+  }
 }
 
 function Enter {
-    [CmdletBinding()]
-    param()
+  [CmdletBinding()]
+  param()
 
-    & adb shell input keyevent 66
+  & adb shell input keyevent 66
 }
 
 function Auth {
@@ -286,7 +287,9 @@ https://api.torratorra.com.br/Auth/v1/Autenticacao
       'Etiqueta'     ,
       'CliqueRetira' ,
       'Admissoes',
-      'PainelVendas'
+      'PainelVendas',
+      'Transferencia',
+      'Comercial'
     )]
     [string]
     $Sistema,
@@ -299,6 +302,12 @@ https://api.torratorra.com.br/Auth/v1/Autenticacao
     [Parameter(Mandatory = $false)]
     [switch]
     $Output,
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Login = "[REPLACE_THIS]",
+    [Parameter(Mandatory = $false)]
+    [string]
+    $Senha = "[REPLACE_THIS]",
     [Parameter(Mandatory = $false)]
     [switch]
     $UseProd
@@ -322,31 +331,33 @@ https://api.torratorra.com.br/Auth/v1/Autenticacao
     $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]" 
     $headers.Add("Content-Type", "application/json")
     $headers.Add("Accept", "application/json")
-    $headers.Add("x-torra-client", "rodrigo")
+    $headers.Add("x-torra-client", "auth-script-v1.0")
 
     $Map = @{
-      Admin        = 1
-      Amostra      = 2
-      Agendamento  = 3
-      Fidc         = 9
-      Inventario   = 7
-      Remarcacao   = 5
-      Recebimento  = 14    
-      PushPull     = 17
-      Etiqueta     = 4
-      CliqueRetira = 12
-      Admissoes    = 16
-      PainelVendas = 20
+      Admin         = 1
+      Amostra       = 2
+      Agendamento   = 3
+      Fidc          = 9
+      Inventario    = 7
+      Remarcacao    = 5
+      Recebimento   = 14    
+      PushPull      = 17
+      Etiqueta      = 4
+      CliqueRetira  = 12
+      Admissoes     = 16
+      PainelVendas  = 20
+      Transferencia = 21
+      Comercial     = 22
     }
 
     $MobileMap = @{
-      Admin       = "ttadmin"
-      Inventario  = "ttinventario"
-      Remarcacao  = "ttremarcacao"
-      Recebimento = "ttrecebimento"
-      PushPull    = "ttpushpull"
+      Admin         = "ttadmin"
+      Inventario    = "ttinventario"
+      Remarcacao    = "ttremarcacao"
+      Recebimento   = "ttrecebimento"
+      PushPull      = "ttpushpull"
+      Transferencia = "tttransferencia"
     }
-        
   }
   process {
     if (-not $Sistema) {
@@ -371,10 +382,10 @@ https://api.torratorra.com.br/Auth/v1/Autenticacao
     $ssoEndpoint = [URI]::EscapeUriString("$uri/Auth/v1/Autenticacao/sso/request")
 
     $Body = @{
-      login         = "[REPLACE_THIS]";
-      senha         = "[REPLACE_THIS]";
-      codigocliente = [REPLACE_THIS]
-      codigoEmpresa = [REPLACE_THIS]
+      login         = $login
+      senha         = $Senha;
+      codigocliente = 1;
+      codigoEmpresa = 1;
       codigoSistema = $Map[$Sistema]
     }
 
@@ -426,9 +437,24 @@ function totp {
   Get-TOTP -SharedSecret $env:TORRA_TOTP_SHARED_SECRET
 }
 
+function atualizar_memorias_codex {
+  $repoPath = "$HOME\.codex\memories"
+  if (Test-Path $repoPath) {
+    Write-Host "Atualizando memórias do Codex..."
+    git -C $repoPath add .
+    git -C $repoPath commit -m 'Atualização automática das memórias do Codex'
+    git -C $repoPath pull
+    git -C $repoPath push 
+        
+  }
+  else {
+    Write-Warning "Repositório de memórias do Codex não encontrado em $repoPath"
+  }
+}
+
 function Invoke-DailyGitPull {
   param(
-    [string]$RepoPath = "$HOME\Documents\obsidian",
+    [string]$RepoPath = "$HOME\projetos\personal\obsidian",
     [string]$StampFile = "$HOME\.daily-git-pull-obsidian"
   )
 
@@ -451,6 +477,50 @@ function Invoke-DailyGitPull {
   if ($LASTEXITCODE -eq 0) {
     Set-Content -Path $StampFile -Value $today
   }
+}
+
+function Invoke-MondayReminders {
+  param(
+    [string]$StampFile = "$HOME\.monday-reminders",
+    [array]$Reminders = @(
+      @{
+        Title = "Boot da semana"
+        Text  = "Carregue o mapa da quest: agenda, prioridades e compromissos críticos."
+      },
+      @{
+        Title = "Inventário de storage"
+        Text  = "Revise repositórios, caches e artefatos antigos. SSD cheio vira boss final."
+      }
+    )
+  )
+
+  $now = Get-Date
+  if ($now.DayOfWeek -ne [DayOfWeek]::Monday) {
+    return
+  }
+
+  $today = $now.ToString("yyyy-MM-dd")
+  $lastRun = if (Test-Path $StampFile) {
+    Get-Content $StampFile -ErrorAction SilentlyContinue
+  }
+
+  if ($lastRun -eq $today) {
+    return
+  }
+
+  Invoke-ClearDisk
+  for ($index = 0; $index -lt $Reminders.Count; $index++) {
+        
+    $reminder = $Reminders[$index]
+    Show-Notification `
+      -ToastTitle $reminder.Title `
+      -ToastText $reminder.Text `
+      -Schedule $now.AddSeconds(10 + ($index * 15)) `
+      -Group 'monday_reminders' `
+      -Tag "monday_reminder_$index"
+  }
+
+  Set-Content -Path $StampFile -Value $today
 }
 
 
@@ -589,11 +659,11 @@ $env:GOOGLE_TOKEN = "[REPLACE_THIS]"
 $env:PSGToken = "[REPLACE_THIS]"
 
 $env:disc_darthside = "REPLACE_THIS"
-$env:DISCORD_WEBHOOK = "[REPLACE_THIS]"
+$env:DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1326182237183545406/bH2E9PSfcRTavPiQsu5qWmUjB8lmFoYvW6Nddh_Sc75vJc3NLeTkjHXdZODC7CEM09Rh"
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 $env:NODE_ENV = 'development'
  
-$env:JAVA_HOME = "C:\Users\[REPLACE_THIS]\Tools\jdk-25.0.1"
+$env:JAVA_HOME = "$HOME\tools\jdk-26.0.1"
 $env:ANDROID_HOME = "c:\Android\Sdk"
 $env:Path = "${env:Path};${env:USERPROFILE}\tools\vim"
 $env:Path = "${env:Path};${env:USERPROFILE}\tools\unmined"
@@ -608,6 +678,9 @@ if (Test-Path($ChocolateyProfile)) {
 
 
 Invoke-DailyGitPull
+atualizar_memorias_codex
+
+Invoke-MondayReminders
 
 $now = [Datetime]::Now
 Show-Notification -ToastTitle 'Olha a coluna' -ToastText 'Nao esqueca de iniciar o lembrete da coluna.' -Schedule $now.AddSeconds(10)
