@@ -78,13 +78,14 @@ Function isInsideGit() {
 }
 
 function Update-ExpoToken {
-  if ($PWD.Path -match [regex]::Escape("$HOME\projetos\torra")) {
-    $env:expo_token = '[REPLACE_THIS]'
+  if ($PWD.Path -match [regex]::Escape("C:\Users\$env:USERNAME\projetos\torra")) {
+    $env:expo_token = "[REPLACE_THIS]"
+    $env:SENTRY_AUTH_TOKEN = "[REPLACE_THIS]"
   }
   else {
     $env:expo_token = "[REPLACE_THIS]"
+    $env:SENTRY_AUTH_TOKEN = "[REPLACE_THIS]"
   }
-  $env:SENTRY_AUTH_TOKEN = '[REPLACE_THIS]'
 }
 
 
@@ -164,35 +165,35 @@ function GetAllFiles {
   $items
 }
 
-function Digita {
-  [CmdletBinding()]
+function Migrate {
   param(
-    [Parameter(Mandatory, ValueFromRemainingArguments, Position = 0)]
-    [string[]]$Text,
-
-    [switch]$SemEnter
+    # Nome da Migration
+    [Parameter(Mandatory = $true, ValueFromRemainingArguments)]
+    [string]$MigrationName
   )
 
-  $conteudo = ($Text -join ' ').Trim()
-  if ([string]::IsNullOrWhiteSpace($conteudo)) {
-    return
-  }
-
-  # adb input text usa %s para espaço
-  $conteudo = $conteudo -replace ' ', '%s'
-
-  & adb shell input text $conteudo
-
-  if (-not $SemEnter) {
-    & adb shell input keyevent 66
-  }
+  $has_source = (Test-Path ./src -PathType Container )
+    
+  $project = if ($has_source) { "./src/infrastructure/infra.data" } else { "./infrastructure/infra.data" }
+  $startup = if ($has_source) { "./src/presentation/" } else { "./presentation" }
+    
+  $startupProject = (Resolve-Path "$startup/**/*.csproj")
+    
+  dotnet ef `
+    migrations add $MigrationName.Replace(" ", "_") `
+    --project $project `
+    --startup-project $startupProject
 }
 
-function Enter {
-  [CmdletBinding()]
-  param()
 
-  & adb shell input keyevent 66
+function screenshot {
+  param(
+    [Parameter(Mandatory = $true, ValueFromRemainingArguments)]
+    [string]$name
+  )
+     
+  adb shell screencap -p /sdcard/screenshot.png
+  adb pull /sdcard/screenshot.png "$($name.Replace(" ", "_")).png"
 }
 
 function Auth {
@@ -376,7 +377,7 @@ https://api.torratorra.com.br/Auth/v1/Autenticacao
     if ($UseProd) {
       $scheme = "https://"
     }
-    $uri = "$($scheme)[REPLACE_THIS]"
+    $uri = "$($scheme)[REPLACE_THIS]:[REPLACE_THIS]"
     $authEndpoint = [URI]::EscapeUriString("$uri/Auth/v1/Autenticacao")
     $reauthEndpoint = [URI]::EscapeUriString("$uri/Auth/v1/Autenticacao/refresh-Token")
     $ssoEndpoint = [URI]::EscapeUriString("$uri/Auth/v1/Autenticacao/sso/request")
@@ -440,11 +441,57 @@ function totp {
 function atualizar_memorias_codex {
   $repoPath = "$HOME\.codex\memories"
   if (Test-Path $repoPath) {
-    Write-Host "Atualizando memórias do Codex..."
-    git -C $repoPath add .
-    git -C $repoPath commit -m 'Atualização automática das memórias do Codex'
-    git -C $repoPath pull
-    git -C $repoPath push 
+    function Write-GitErrorOutput {
+      param(
+        [object[]]$Output
+      )
+
+      foreach ($line in $Output) {
+        if ($line -is [System.Management.Automation.ErrorRecord]) {
+          [Console]::Error.WriteLine($line.Exception.Message)
+        }
+        else {
+          [Console]::Error.WriteLine($line.ToString())
+        }
+      }
+    }
+
+    function Invoke-GitQuiet {
+      param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+      )
+
+      $output = & git @Arguments 2>&1
+      if ($LASTEXITCODE -ne 0) {
+        Write-GitErrorOutput -Output $output
+        return $false
+      }
+
+      return $true
+    }
+
+    if (-not (Invoke-GitQuiet -Arguments @('-C', $repoPath, 'add', '.'))) {
+      return
+    }
+
+    & git -C $repoPath diff --cached --quiet 2>$null
+    if ($LASTEXITCODE -eq 1) {
+      if (-not (Invoke-GitQuiet -Arguments @('-C', $repoPath, 'commit', '-m', 'Atualização automática das memórias do Codex'))) {
+        return
+      }
+    }
+    elseif ($LASTEXITCODE -ne 0) {
+      $output = & git -C $repoPath diff --cached --quiet 2>&1
+      Write-GitErrorOutput -Output $output
+      return
+    }
+
+    if (-not (Invoke-GitQuiet -Arguments @('-C', $repoPath, 'pull'))) {
+      return
+    }
+    Write-Host "Atualizando memorias codex...";
+    Invoke-GitQuiet -Arguments @('-C', $repoPath, 'push') | Out-Null
         
   }
   else {
@@ -516,8 +563,8 @@ function Invoke-MondayReminders {
       -ToastTitle $reminder.Title `
       -ToastText $reminder.Text `
       -Schedule $now.AddSeconds(10 + ($index * 15)) `
-      -Group 'monday_reminders' `
-      -Tag "monday_reminder_$index"
+      -Group 'monday_reminders' # `
+    # -Tag "monday_reminder_$index"
   }
 
   Set-Content -Path $StampFile -Value $today
@@ -540,7 +587,7 @@ function Coluna {
     "O que e isso, tirou um nos dados? Arrume essa coluna rapaz!",
     "Se continuar assim, ate o dragao vai ter do de vocÃª.",
     "A coluna torta nao da bonus de defesa, ajuste isso ja!",
-    "Lembre-se: postura correta da vantagem em testes de ForÃ§a.",
+    "Lembre-se: postura correta da vantagem em testes de Forçã.",
     "Torto desse jeito, nem o bardo consegue te convencer de que esta bem.",
     "Sente-se como se estivesse em um banquete real, nao numa taverna caindo aos pedaÃ§os.",
     "Se voce fosse um elfo, ja estaria ouvindo sermao sobre postura ha horas.",
@@ -562,19 +609,19 @@ function Agua {
   )
   timer 600
   $strings = @(
-    "E hora da hidrataÃ§ao! Repetindo, e hora da hidrataÃ§ao!",
-    "Bebe agua, abenÃ§oado, ou vai receber dano por desidrataÃ§ao!",
+    "E hora da hidratação! Repetindo, e hora da hidratação!",
+    "Bebe agua, abenÃ§oado, ou vai receber dano por desidratação!",
     "Olha a agua, nao va falhar no teste de sobrevivencia.",
     "Um gole de agua por obsÃ©quio, seu HP depende disso.",
     "Faz o favor de tomar uma aguinha? Seu rim agradece e o clerigo tambem.",
     "Ate o dragao bebe agua, quem dira voce.",
     "Se hidratar e como recarregar poÃ§oes de mana, beba agua!",
-    "VocÃª estÃ¡ em estado 'Desidratado'. SoluÃ§Ã£o: beber agua.",
-    "Falha critica em sobrevivencia? Nao, e so desidrataÃ§ao. Beba agua!",
-    "A hidrataÃ§ao e o segredo dos herois, siga o exemplo dos bardos!",
+    "VocÃª estÃ¡ em estado 'Desidratado'. Solução: beber agua.",
+    "Falha critica em sobrevivencia? Nao, e so desidratação. Beba agua!",
+    "A hidratação e o segredo dos herois, siga o exemplo dos bardos!",
     "Olha a agua, se nao o mestre vai aplicar dano nao letal.",
-    "Bebe agua, ou vai acordar com condiÃ§ao 'exausto' no proximo descanso longo.",
-    "Um guerreiro sabio sabe que hidrataÃ§ao e metade da batalha!",
+    "Bebe agua, ou vai acordar com condição 'exausto' no proximo descanso longo.",
+    "Um guerreiro sabio sabe que hidratação e metade da batalha!",
     "Ate os goblins param pra beber agua, o que voce esta esperando?",
     "Sem agua, voce nao vai ganhar bonus de ataque, confia.",
     "Olha a agua"
@@ -587,53 +634,6 @@ function Agua {
   }
   Show-Notification -ToastTitle "Olha a Ã¡aagua!" -ToastText $message -IconUri "https://png.pngtree.com/png-clipart/20240615/original/pngtree-glass-with-water-isolated-png-image_15329246.png" -Group 'water_notification' -Tag 'water_notification'
   Agua -silent:$silent
-}
-
-
-
-function Get-AdoPipelineStatus {
-  [CmdletBinding()]
-  param (
-    [Parameter(Mandatory = $true)]
-    [string]$ExecutionUrl
-  )
-  $run = $true;
-  while ($run) {
-    try {
-      if ($ExecutionUrl -match "https:\/\/dev\.azure\.com\/([^\/]+)\/([^\/]+)\/_build\/results\?buildId=(\d+)") {
-        $org = $matches[1]
-        $project = $matches[2]
-        $buildId = $matches[3]
-      }
-      else {
-        throw "Invalid Azure DevOps pipeline URL format."
-      }
-      $apiUrl = "https://dev.azure.com/$org/$project/_apis/build/builds/$($buildId)?api-version=7.0"
-      $encodedPAT = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:PAT)"))
-      $headers = @{
-        "Authorization" = "Basic $encodedPAT"
-      }
-      $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method Get
-      $payload = [PSCustomObject]@{
-        BuildId    = $response.id
-        Status     = $response.status
-        Result     = $response.result
-        QueueTime  = $response.queueTime
-        StartTime  = $response.startTime
-        FinishTime = $response.finishTime
-      }
-            
-      if ($response.status -eq 'completed') {
-        $run = $false
-        return $payload   
-      }
-      timer 30               
-    }
-    catch {
-      Write-Error "Failed to retrieve pipeline status: $($_.Exception.Message)"
-      $run = $false
-    }
-  }
 }
 
 function Install-Dotnet {
@@ -652,23 +652,26 @@ Set-Alias la GetAllFiles
 Set-Alias ssms "C:\Program Files\Microsoft SQL Server Management Studio 22\Release\Common7\IDE\SSMS.exe"
 Set-Alias vi vim
 Set-Alias unmined unmined-cli.exe
+set-alias shot screenshot
 
 ## PERSONAL_VARIABLES
 $env:PAT = "[REPLACE_THIS]"
 $env:GOOGLE_TOKEN = "[REPLACE_THIS]"
 $env:PSGToken = "[REPLACE_THIS]"
 
-$env:disc_darthside = "REPLACE_THIS"
-$env:DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1326182237183545406/bH2E9PSfcRTavPiQsu5qWmUjB8lmFoYvW6Nddh_Sc75vJc3NLeTkjHXdZODC7CEM09Rh"
-$env:ASPNETCORE_ENVIRONMENT = 'Development'
-$env:NODE_ENV = 'development'
+$env:disc_darthside = "[REPLACE_THIS]"
+$env:DISCORD_WEBHOOK = "[REPLACE_THIS]"
+$env:ASPNETCORE_ENVIRONMENT = "[REPLACE_THIS]"
+$env:NODE_ENV = "[REPLACE_THIS]"
  
-$env:JAVA_HOME = "$HOME\tools\jdk-26.0.1"
+$env:JAVA_HOME = "C:\Users\rodrigo.cordeiro\tools\jdk-26.0.1"
 $env:ANDROID_HOME = "c:\Android\Sdk"
 $env:Path = "${env:Path};${env:USERPROFILE}\tools\vim"
 $env:Path = "${env:Path};${env:USERPROFILE}\tools\unmined"
 $env:Path = "${env:Path};${env:JAVA_HOME}\bin;${env:ANDROID_HOME}\emulator;${env:ANDROID_HOME}\tools;${env:ANDROID_HOME}\tools\bin;${env:ANDROID_HOME}\platform-tools"
 $env:Path = "${env:Path};${env:LOCALAPPDATA}\Microsoft\dotnet\"
+
+$env:GITHUB_MCP_TOKEN = "[REPLACE_THIS]"
 
 $ChocolateyProfile = "${env:ChocolateyInstall}\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
